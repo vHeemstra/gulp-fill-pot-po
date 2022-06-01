@@ -21,9 +21,11 @@ const fillPotPo = require('gulp-fill-pot-po');
 
 const defaultTask = () => {
     return src('src/languages/*.pot')
-        .pipe( fillPotPo() )
+        .pipe( fillPotPo( {
+            logResults: true
+        } ) )
         .pipe( dest('dist/languages/') );
-});
+};
 
 exports.default = defaultTask;
 ```
