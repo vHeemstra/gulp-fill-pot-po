@@ -1,0 +1,43 @@
+{
+  "name": "gulp-fill-pot-po",
+  "version": "0.3.0",
+  "description": "Create pre-filled po files using existing po files with pot file via gulp",
+  "license": "MIT",
+  "repository": "https://github.com/vheemstra/gulp-fill-pot-po.git",
+  "homepage": "https://github.com/vheemstra/gulp-fill-pot-po",
+  "bugs": "https://github.com/vheemstra/gulp-fill-pot-po/issues",
+  "author": {
+    "name": "Philip van Heemstra",
+    "url": "https://github.com/vheemstra"
+  },
+  "engines": {
+    "node": ">=12"
+  },
+  "files": [
+    "index.js"
+  ],
+  "keywords": [
+    "gulpplugin",
+    "fill-pot-po",
+    "pot",
+    "po",
+    "fill",
+    "merge",
+    "auto-fill",
+    "prefill",
+    "pre-fill",
+    "generate",
+    "create",
+    "i18n",
+    "l10n",
+    "gettext",
+    "translation"
+  ],
+  "dependencies": {
+    "vinyl": "^2.2.1"
+  },
+  "devDependencies": {
+    "gulp": "^4.0.2",
+    "gulp-wp-pot": "^2.5.0"
+  }
+}
