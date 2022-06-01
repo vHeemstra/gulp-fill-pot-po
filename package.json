@@ -34,10 +34,7 @@
     "translation"
   ],
   "dependencies": {
+    "fill-pot-po": "github:vheemstra/fill-pot-po",
     "vinyl": "^2.2.1"
-  },
-  "devDependencies": {
-    "gulp": "^4.0.2",
-    "gulp-wp-pot": "^2.5.0"
   }
 }
