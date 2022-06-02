@@ -13,7 +13,7 @@
   "scripts": {
     "lint": "eslint index.js",
     "lint:fix": "eslint --fix index.js test/*.js",
-    "test": "jest",
+    "test": "jest --passWithNoTests",
     "preversion": "npm run lint && npm test",
     "postversion": "git push && git push --tags"
   },
