@@ -2,7 +2,9 @@
     <img height="257" width="114" src="https://raw.githubusercontent.com/vheemstra/gulp-fill-pot-po/main/logo.svg">
 </p>
 
-# gulp-fill-pot-po
+<h1 align="center">
+gulp-fill-pot-po
+</h1>
 
 > Gulp wrapper for [fill-pot-po](https://github.com/vheemstra/fill-pot-po). Generates pre-filled PO files from POT file, using source PO files.
 > 
@@ -66,6 +68,8 @@ exports.default = defaultTask;
 See all available options in the [`fill-pot-po` readme](https://github.com/vheemstra/fill-pot-po#options).
 
 All options are passed to `fill-pot-po`, except for `potSources`, which is set by `gulp-fill-pot-po`.
+
+Unlike `fill-pot-po`, for `gulp-fill-pot-po` the default for option `writeFiles` is `false`, since the resulting buffers will probably be `.pipe( dest() )`'d which writes them to disk instead.
 
 ## Related
 - [fill-pot-po](https://github.com/vheemstra/fill-pot-po) - NodeJS module that does all the work
