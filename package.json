@@ -10,6 +10,13 @@
     "name": "Philip van Heemstra",
     "url": "https://github.com/vheemstra"
   },
+  "scripts": {
+    "lint": "eslint index.js",
+    "lint:fix": "eslint --fix index.js test/*.js",
+    "test": "jest",
+    "preversion": "npm run lint && npm test",
+    "postversion": "git push && git push --tags"
+  },
   "engines": {
     "node": ">=12"
   },
@@ -34,7 +41,12 @@
     "translation"
   ],
   "dependencies": {
-    "fill-pot-po": "github:vheemstra/fill-pot-po",
+    "fill-pot-po": "^0.3.0",
     "vinyl": "^2.2.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.16.0",
+    "eslint-plugin-jest": "^26.4.6",
+    "jest": "^28.1.0"
   }
 }
