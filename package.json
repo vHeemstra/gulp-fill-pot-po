@@ -13,9 +13,7 @@
   "scripts": {
     "lint": "eslint index.js test/*.js",
     "lint:fix": "eslint --fix index.js test/*.js",
-    "test": "jest",
-    "preversion": "npm run lint && npm test",
-    "postversion": "git push && git push --tags"
+    "test": "jest"
   },
   "engines": {
     "node": ">=12"
