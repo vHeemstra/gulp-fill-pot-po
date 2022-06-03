@@ -4,8 +4,8 @@ const Vinyl = require('vinyl');
 const { Transform } = require('stream');
 
 const fillPotPo = require('fill-pot-po');
-const prepareOptions = require('fill-pot-po/options');
-const PluginError = require('fill-pot-po/plugin-error');
+const prepareOptions = require('fill-pot-po/src/options');
+const PluginError = require('fill-pot-po/src/plugin-error');
 
 /**
  * Run the PO generator.
@@ -76,10 +76,14 @@ function gulpFillPotPo(options) {
 			} catch (error) {
 				return done(error);
 			}
-		}
+		},
+		flush(done) {
+			done();
+		},
 	});
 
 	return transformer;
+
 }
 
 module.exports = gulpFillPotPo;

@@ -1,8 +1,7 @@
 /test
 /other
 .editorconfig
-.gitattributes
-.gitignore
 .eslintrc.js
+.gitattributes
 jest.config.js
 *.bak
