@@ -11,9 +11,9 @@
     "url": "https://github.com/vheemstra"
   },
   "scripts": {
-    "lint": "eslint index.js",
+    "lint": "eslint index.js test/*.js",
     "lint:fix": "eslint --fix index.js test/*.js",
-    "test": "jest --passWithNoTests",
+    "test": "jest",
     "preversion": "npm run lint && npm test",
     "postversion": "git push && git push --tags"
   },
