@@ -150,3 +150,12 @@ msgstr "ID: %d"
 msgctxt "The context"
 msgid "String with context missing, but no-context present"
 msgstr ""
+
+msgctxt "The context"
+msgid "Fallback string - no comments"
+msgstr ""
+
+#, gp-priority: high
+msgctxt "The context"
+msgid "Fallback string - flag comment"
+msgstr ""
