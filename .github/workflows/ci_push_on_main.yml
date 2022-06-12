@@ -1,0 +1,130 @@
+name: Lint | Test | Release
+
+on:
+  push:
+    branches:
+      - main
+    # Only run when push includes commits with changes to:
+    paths:
+      # - 'src/**'
+      - 'index.js'
+      - '.npmignore'
+      - 'LICENSE'
+      - 'package.json'
+      - 'package-lock.json'
+
+jobs:
+  lint:
+    name: Lint
+    if: |
+      !startsWith(github.event.head_commit.message, 'Release version ')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Run ESlint
+        run: npm run lint
+
+  test:
+    name: Test (Node ${{ matrix.node-version }} on ${{ matrix.os }})
+    if: |
+      !startsWith(github.event.head_commit.message, 'Release version ')
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version:
+          # - 12.x
+          # - 14.x
+          - 16.x
+        os:
+          - ubuntu-latest
+          - windows-latest
+          # - macos-latest
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Run Jest
+        run: npm test
+
+  version:
+    name: Release new version
+    needs: [lint, test]
+    if: |
+      !contains(github.event.head_commit.message, '[!VERSION]')
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+        # with:
+        #   token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+          cache: npm
+          registry-url: https://registry.npmjs.org/
+
+      - name: Set Git user
+        run: |
+          git config --global user.name 'vHeemstra'
+          git config --global user.email '17368112+vHeemstra@users.noreply.github.com'
+
+      # TODO? check all commits since last (= current) version instead of only the head_commit
+      # github.event.commits.*.message
+
+      - name: Major version
+        if: |
+          startsWith(github.event.head_commit.message, 'breaking') ||
+          startsWith(github.event.head_commit.message, 'major:')
+        run: echo "NEW_VERSION=$(npm version major -m 'Release version %s')" >> $GITHUB_ENV
+      - name: Minor version
+        if: |
+          startsWith(github.event.head_commit.message, 'feat') ||
+          startsWith(github.event.head_commit.message, 'minor:')
+        run: echo "NEW_VERSION=$(npm version minor -m 'Release version %s')" >> $GITHUB_ENV
+      - name: Patch version
+        if: |
+          !startsWith(github.event.head_commit.message, 'breaking') &&
+          !startsWith(github.event.head_commit.message, 'major:') &&
+          !startsWith(github.event.head_commit.message, 'feat') &&
+          !startsWith(github.event.head_commit.message, 'minor:')
+        run: echo "NEW_VERSION=$(npm version patch -m 'Release version %s')" >> $GITHUB_ENV
+
+      # - name: Get trimmed version
+      #   # Strip leading 'v' and trailing '.0' from new version
+      #   run: |
+      #     shopt -s extglob
+      #     TRIMMED_NEW_VERSION=${NEW_VERSION/#v/}
+      #     echo "TRIMMED_NEW_VERSION=${TRIMMED_NEW_VERSION/%+(.0)/}" >> $GITHUB_ENV
+      #
+      # - name: Change commit message
+      #     run: git commit --amend -m "Release version ${{ env.TRIMMED_NEW_VERSION }}"
+
+      - name: Push new version and tag
+        run: git push --follow-tags
+
+      - name: Create GitHub release
+        run: gh release create ${{ env.NEW_VERSION }} --generate-notes
+        # env:
+        #   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
