@@ -6,7 +6,7 @@ changelog:
     labels:
       - ignore-for-release
     authors:
-      - 'dependabot[bot]'
+      - dependabot
   categories:
     - title: 🚨 Breaking Changes
       labels:
