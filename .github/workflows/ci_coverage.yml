@@ -56,7 +56,7 @@ jobs:
           path-to-lcov: ./test/coverage/lcov.info
 
       - name: Codecov
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         with:
           directory: ./test/coverage/
           # token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
