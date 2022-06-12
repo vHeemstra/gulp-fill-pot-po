@@ -8,16 +8,16 @@ root = true
 end_of_line = lf
 insert_final_newline = true
 
-# Leave PO/MO/POT files alone
-[**.{po,mo,pot}]
-insert_final_newline = false
-
-[**.js]
+[**/*.js]
 charset = utf-8
 trim_trailing_whitespace = true
 indent_style = tab
 indent_size = 2
 
-[*.json]
+[**/*.{json,yml}]
 indent_style = space
 indent_size = 2
+
+# Leave PO/MO/POT files alone
+[**/*.{po,mo,pot}]
+insert_final_newline = false
