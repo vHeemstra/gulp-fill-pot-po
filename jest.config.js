@@ -17,7 +17,7 @@ module.exports = {
 	// clearMocks: false,
 
 	// Indicates whether the coverage information should be collected while executing the test
-	collectCoverage: true,
+	collectCoverage: false,
 
 	// An array of glob patterns indicating a set of files for which coverage information should be collected
 	// collectCoverageFrom: undefined,
@@ -43,6 +43,7 @@ module.exports = {
 	// ],
 	coverageReporters: [
 	  "text",
+	  "lcov",
 	  // "text-summary",
 	],
 
@@ -112,6 +113,7 @@ module.exports = {
 
 	// Use this configuration option to add custom reporters to Jest
 	// reporters: undefined,
+	reporters: ['default', 'github-actions'],
 
 	// Automatically reset mock state before every test
 	// resetMocks: false,

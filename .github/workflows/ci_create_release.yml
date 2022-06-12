@@ -1,0 +1,44 @@
+name: Publish
+
+on:
+  release:
+    # See: https://docs.github.com/en/developers/webhooks-and-events/webhooks/webhook-events-and-payloads#release
+    # published: a release, pre-release, or draft of a release is published
+    types: [published]
+    # created: a draft is saved, or a release or pre-release is published without previously being saved as a draft
+    # types: [created]
+
+jobs:
+  publish:
+    name: Publish to NPM
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+      # Setup .npmrc file to publish to npm
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+          cache: npm
+          registry-url: https://registry.npmjs.org
+      - name: Install dependencies
+        run: npm ci
+      - name: Publish to NPM
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      # Throws errors
+      # See: https://github.com/vHeemstra/fill-pot-po/runs/6805116331?check_suite_focus=true#step:8:33
+      # # Setup .npmrc file to publish to GitHub Packages
+      # - name: Install Node.js
+      #   uses: actions/setup-node@v3
+      #   with:
+      #     node-version: 16.x
+      #     cache: npm
+      #     scope: '@vHeemstra'
+      #     registry-url: https://npm.pkg.github.com
+      # - name: Publish to GitHub Packages
+      #   run: npm publish
+      #   env:
+      #     NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
