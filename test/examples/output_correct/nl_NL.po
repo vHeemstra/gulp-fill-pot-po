@@ -143,6 +143,16 @@ msgstr "Some single-quoted 'string'"
 msgid "Some other \"string\""
 msgstr "Some other double-quoted \"string\""
 
+#, fuzzy, gp-priority: high
+msgctxt "The context"
+msgid "Fallback string - flag comment"
+msgstr ""
+
+#, fuzzy
+msgctxt "The context"
+msgid "Fallback string - no comments"
+msgstr ""
+
 msgid "Missing string 2"
 msgstr ""
 
@@ -165,3 +175,28 @@ msgstr "Extra string 1"
 #: some/extra/string.php:20
 msgid "Extra string 2"
 msgstr "Extra string 2"
+
+# DEPRECATED
+msgctxt "Missing extra context"
+msgid "Extra string - no comments"
+msgstr ""
+
+# DEPRECATED
+# Basic extra string with a "DEPRECATED" translator comment
+msgid "Extra string - deprecated translator comment"
+msgstr ""
+
+# DEPRECATED
+# Basic extra string with a translator comment
+msgid "Extra string - translator comment"
+msgstr ""
+
+# DEPRECATED
+# NOTE: re-used for same message, but with context 'The context'
+msgid "Fallback string - flag comment"
+msgstr ""
+
+# DEPRECATED
+# NOTE: re-used for same message, but with context 'The context'
+msgid "Fallback string - no comments"
+msgstr ""

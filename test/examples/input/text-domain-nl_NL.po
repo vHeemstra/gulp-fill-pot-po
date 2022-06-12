@@ -147,3 +147,22 @@ msgstr "Extra string 1"
 #: some/extra/string.php:20
 msgid "Extra string 2"
 msgstr "Extra string 2"
+
+msgid "Fallback string - no comments"
+msgstr ""
+
+msgid "Fallback string - flag comment"
+msgstr ""
+
+msgctxt "Missing extra context"
+msgid "Extra string - no comments"
+msgstr ""
+
+# Basic extra string with a translator comment
+msgid "Extra string - translator comment"
+msgstr ""
+
+# DEPRECATED
+# Basic extra string with a "DEPRECATED" translator comment
+msgid "Extra string - deprecated translator comment"
+msgstr ""
