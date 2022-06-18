@@ -16,20 +16,11 @@ on:
       - 'package.json'
       - 'package-lock.json'
 
-  pull_request:
-    branches:
-      - main
-    # Only run when push includes commits with changes to:
-    paths:
-      # - 'src/**.js'
-      - 'index.js'
-      - 'test/**.{js,pot,po}'
-      - 'jest.config.js'
-      - 'package.json'
-
 jobs:
   collect_and_upload:
     name: Collect and upload test coverage
+    if: |
+      !startsWith(github.event.head_commit.message, 'Merge pull request #')
     runs-on: ubuntu-latest
 
     steps:

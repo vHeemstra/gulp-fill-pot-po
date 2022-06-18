@@ -55,12 +55,40 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
+
       - name: Install Node.js
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
+
       - name: Install dependencies
         run: npm ci
+
       - name: Run Jest
+        if: matrix.os != 'ubuntu-latest' || matrix.node-version != '16.x'
         run: npm test
+
+      - name: Run Jest with coverage
+        if: matrix.os == 'ubuntu-latest' && matrix.node-version == '16.x'
+        run: npm test -- --coverage
+
+      # Save coverage report in Coveralls
+      - name: Coveralls
+        if: matrix.os == 'ubuntu-latest' && matrix.node-version == '16.x'
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: ./test/coverage/lcov.info
+
+      # - name: Codecov
+      #   if: matrix.os == 'ubuntu-latest' && matrix.node-version == '16.x'
+      #   uses: codecov/codecov-action@v2
+      #   with:
+      #     directory: ./test/coverage/
+      #     # token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
+      #     # files: ./coverage1.xml,./coverage2.xml # optional
+      #     flags: unittests # optional
+      #     # path_to_write_report: ./coverage/codecov_report.txt
+      #     # fail_ci_if_error: true # optional (default = false)
+      #     verbose: true # optional (default = false)
