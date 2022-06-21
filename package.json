@@ -39,12 +39,12 @@
     "translation"
   ],
   "dependencies": {
-    "fill-pot-po": "^2.1.5",
+    "fill-pot-po": "^2.1.6",
     "plugin-error": "^1.0.1",
     "vinyl": "^2.2.1"
   },
   "devDependencies": {
-    "eslint": "^8.17.0",
+    "eslint": "^8.18.0",
     "eslint-plugin-jest": "^26.5.3",
     "jest": "^28.1.1",
     "matched": "^5.0.1"
