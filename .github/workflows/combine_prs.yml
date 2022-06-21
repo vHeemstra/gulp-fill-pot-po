@@ -242,6 +242,9 @@ jobs:
           # github-token: ${{ secrets.GITHUB_TOKEN }}
           github-token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
           script: |
+            const repo = context.repo.repo;
+            const owner = context.repo.owner;
+
             const prString = process.env.PRS_STRING;
             const body = 'This PR was created by the Combine PRs action by combining the following PRs:\n' + prString;
             // const response = await github.rest.pulls.create( { owner, repo,
