@@ -182,8 +182,7 @@ jobs:
                 if ( statusOK ) {
                   console.log('Result: INCLUDE');
                   branches.push( branch );
-                  prs.push('* #' + pull.number );
-                  // prs.push('* #' + pull.number + ' ' + pull.title );
+                  prs.push( pull.number );
                 } else {
                   console.log('Result: SKIP');
                 }
@@ -200,7 +199,7 @@ jobs:
             console.log( '- ' + branches.join('\n- ') );
 
             core.setOutput('base-branch', base_branch );
-            core.setOutput('prs-string', prs.join('\n') );
+            core.setOutput('prs-string', prs.join(',') );
             return branches.join(' ');
 
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -237,17 +236,37 @@ jobs:
       - uses: actions/github-script@v6
         name: Create Combined Pull Request
         env:
-          PRS_STRING: ${{ steps.fetch-branch-names.outputs.prs-string }}
+          PRS: ${{ steps.fetch-branch-names.outputs.prs-string }}
         with:
           # github-token: ${{ secrets.GITHUB_TOKEN }}
           github-token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
           script: |
             const repo = context.repo.repo;
             const owner = context.repo.owner;
+            const prs = process.env.PRS.split(',');
 
-            const prString = process.env.PRS_STRING;
-            const body = 'This PR was created by the Combine PRs action by combining the following PRs:\n' + prString;
-            // const response = await github.rest.pulls.create( { owner, repo,
+            const prsString = '* #' + prs.join('\n* #');
+
+            const lastPR = prs.pop();
+            let closesString = 'Closes #' + prs.join(', closes #');
+            if ( lastPR ) {
+              closesString = closesString + (closesString.length > 8 ? ' and closes #': '') + lastPR;
+            }
+
+            const body = [
+              'This PR was created by the Combine PRs action by combining the following PRs:',
+              prsString,
+              '',
+              closesString
+            ].join('\n');
+
+            const response = await github.rest.pulls.create( { owner, repo,
+              title: 'Combined PR',
+              head: '${{ inputs.combineBranchName }}',
+              base: '${{ steps.fetch-branch-names.outputs.base-branch }}',
+              body: body
+            } );
+            /*
             const response = await github.request(
               'POST /repos/{owner}/{repo}/pulls',
               { owner, repo,
@@ -257,10 +276,11 @@ jobs:
                 body: body
               }
             );
-            console.log( response );
 
             await github.rest.issues.addLabels( {
               owner, repo,
               issue_number: response.data.number,
               labels: ['dependencies', 'npm']
             } );
+            */
+            console.log( response );
