@@ -67,7 +67,7 @@ jobs:
         with:
           # github-token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
           script: |
-            const getSemverChange = require('./get-commits-semver-change.js');
+            const getSemverChange = require('./.github/workflows/get-commits-semver-change.js');
             const result = getSemverChange( { github, context, core, glob, io, exec, require } );
             console.log( result );
             return result;
