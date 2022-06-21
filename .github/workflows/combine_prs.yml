@@ -45,11 +45,6 @@ jobs:
       - uses: actions/github-script@v6
         id: fetch-branch-names
         name: Fetch branch names
-        # env:
-        #   BRANCH_PREFIX: ${{ inputs.branchPrefix }}
-        #   STATUSES_FILTER: ${{ inputs.statusesFilter }}
-        #   CHECKRUN_FILTER: ${{ inputs.checkRunsFilter }}
-        #   IGNORE_LABELS: ${{ inputs.ignoreLabels }}
         with:
           # github-token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
           script: |
@@ -210,9 +205,9 @@ jobs:
       # Creates a branch with other PR branches merged together
       - name: Created combined branch
         env:
+          COMBINE_BRANCH_NAME: ${{ inputs.combineBranchName }}
           BASE_BRANCH: ${{ steps.fetch-branch-names.outputs.base-branch }}
           BRANCHES_TO_COMBINE: ${{ steps.fetch-branch-names.outputs.result }}
-          COMBINE_BRANCH_NAME: ${{ inputs.combineBranchName }}
         run: |
           echo "$BRANCHES_TO_COMBINE"
           sourcebranches="${BRANCHES_TO_COMBINE%\"}"
@@ -236,6 +231,7 @@ jobs:
       - uses: actions/github-script@v6
         name: Create Combined Pull Request
         env:
+          BASE_BRANCH: ${{ steps.fetch-branch-names.outputs.base-branch }}
           PRS: ${{ steps.fetch-branch-names.outputs.prs-string }}
         with:
           # github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -243,6 +239,8 @@ jobs:
           script: |
             const repo = context.repo.repo;
             const owner = context.repo.owner;
+            const combine_branch_name = context.payload.inputs.combineBranchName;
+            const base_branch = process.env.BASE_BRANCH;
             const prs = process.env.PRS.split(',');
 
             const prsString = '* #' + prs.join('\n* #');
@@ -253,34 +251,50 @@ jobs:
               closesString = closesString + (closesString.length > 8 ? ' and closes #': '') + lastPR;
             }
 
+            const now = new Date();
+            const stamp = [
+              now.getUTCFullYear(),
+              String(now.getUTCMonth()+1).padStart(2,'0'),
+              String(now.getUTCDate()).padStart(2, '0')
+            ].join('/');
+
             const body = [
-              'This PR was created by the Combine PRs action by combining the following PRs:',
+              '_This PR was created by the Combine PRs action._',
+              '#### Combined pull requests:',
               prsString,
-              '',
+              '---',
               closesString
             ].join('\n');
 
-            const response = await github.rest.pulls.create( { owner, repo,
-              title: 'Combined PR',
-              head: '${{ inputs.combineBranchName }}',
-              base: '${{ steps.fetch-branch-names.outputs.base-branch }}',
+            /*
+            const new_pr_response = await github.rest.pulls.create( { owner, repo,
+              title: 'Combined PR (' + stamp + ')',
+              head: combine_branch_name,
+              base: base_branch,
               body: body
             } );
-            /*
-            const response = await github.request(
+
+            await github.rest.issues.addLabels( {
+              owner, repo,
+              issue_number: new_pr_response.data.number,
+              labels: ['dependencies', 'npm']
+            } );
+            */
+
+            const new_pr_response = await github.request(
               'POST /repos/{owner}/{repo}/pulls',
               { owner, repo,
-                title: 'Combined PR',
-                head: '${{ inputs.combineBranchName }}',
-                base: '${{ steps.fetch-branch-names.outputs.base-branch }}',
+                title: 'Combined PR (' + stamp + ')',
+                head: combine_branch_name,
+                base: base_branch,
                 body: body
               }
             );
 
-            await github.rest.issues.addLabels( {
-              owner, repo,
-              issue_number: response.data.number,
-              labels: ['dependencies', 'npm']
-            } );
-            */
-            console.log( response );
+            await github.request(
+              'POST /repos/{owner}/{repo}/issues/{issue_number}/labels',
+              { owner, repo,
+                issue_number: new_pr_response.data.number,
+                labels: ['dependencies', 'npm']
+              }
+            );
