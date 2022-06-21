@@ -79,10 +79,9 @@ jobs:
             const repo = context.repo.repo;
             const owner = context.repo.owner;
 
-            let base_branch = context.payload.ref;
-            console.log('context.payload.ref=' + context.payload.ref);
-            console.log('context.ref:');
-            console.log(context.ref || 'nope'); //refs/heads/..
+            let base_branch = context.payload.ref.replace(/^refs\/heads\//, '');
+            console.log('context.inputs:');
+            console.log(context.inputs || 'nope');
             let branches = [];
             let prs = [];
 
@@ -139,6 +138,7 @@ jobs:
                 }
 
                 if ( statusOK ) {
+                  console.log('');
                   console.log('Checking check-runs:');
                   const checkruns = await github.paginate(
                     'GET /repos/{owner}/{repo}/commits/{ref}/check-runs',
@@ -164,13 +164,14 @@ jobs:
                 }
 
                 if ( statusOK ) {
+                  console.log('');
                   console.log('Checking ignore labels:');
                   const labels = pull.labels;
                   if ( labels.length > 0 ) {
                     const labels_force_skip = labels
                       .reduce( ( check, label ) => {
                         return ( check || ignore_labels.includes( label.name ) );
-                      }, true );
+                      }, false );
                     if ( labels_force_skip ) {
                       console.log('MATCH: One or more labels matched.');
                       statusOK = false;
@@ -178,6 +179,7 @@ jobs:
                   }
                 }
 
+                console.log('');
                 if ( statusOK ) {
                   console.log('Result: INCLUDE');
                   branches.push( branch );
