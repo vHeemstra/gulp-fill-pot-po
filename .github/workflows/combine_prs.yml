@@ -45,57 +45,52 @@ jobs:
       - uses: actions/github-script@v6
         id: fetch-branch-names
         name: Fetch branch names
-        env:
-          BRANCH_PREFIX: ${{ inputs.branchPrefix }}
-          STATUSES_FILTER: ${{ inputs.statusesFilter }}
-          CHECKRUN_FILTER: ${{ inputs.checkRunsFilter }}
-          IGNORE_LABELS: ${{ inputs.ignoreLabels }}
+        # env:
+        #   BRANCH_PREFIX: ${{ inputs.branchPrefix }}
+        #   STATUSES_FILTER: ${{ inputs.statusesFilter }}
+        #   CHECKRUN_FILTER: ${{ inputs.checkRunsFilter }}
+        #   IGNORE_LABELS: ${{ inputs.ignoreLabels }}
         with:
           # github-token: ${{secrets.GITHUB_TOKEN}}
           script: |
-            const BRANCH_PREFIX = process.env.BRANCH_PREFIX || 'dependabot';
-            const STATUSES_FILTER = process.env.STATUSES_FILTER || 'success';
-            const CHECKRUN_FILTER = process.env.CHECKRUN_FILTER || 'neutral,success,skipped';
-            const IGNORE_LABELS = process.env.IGNORE_LABELS || 'nocombine';
-            // context.payload.inputs.some_workflow_dispatch_input_var
+            const branchPrefix = context.payload.inputs.branchPrefix;
+            const statusesFilter = context.payload.inputs.statusesFilter;
+            const checkRunsFilter = context.payload.inputs.checkRunsFilter;
+            const ignoreLabels = context.payload.inputs.ignoreLabels;
 
             // all: 'success,pending,failure,error'
             // default: 'success'
-            const included_statuses = STATUSES_FILTER.split(',')
+            const included_statuses = statusesFilter.split(',')
               .map( v => v.trim() )
               .filter( v => v.length > 0 );
 
             // all: 'action_required,cancelled,failure,neutral,success,skipped,stale,timed_out'
             // default: 'neutral,success,skipped'
-            const included_checkruns = CHECKRUN_FILTER.split(',')
+            const included_checkruns = checkRunsFilter.split(',')
               .map( v => v.trim() )
               .filter( v => v.length > 0 );
 
             // default: 'nocombine'
-            const ignore_labels = IGNORE_LABELS.split(',')
+            const ignore_labels = ignoreLabels.split(',')
               .map( v => v.trim() )
               .filter( v => v.length > 0 );
 
             const repo = context.repo.repo;
             const owner = context.repo.owner;
 
-            let base_branch = context.payload.ref.replace(/^refs\/heads\//, '');
-            console.log('context.inputs:');
-            console.log(context.inputs || 'nope');
+            const base_branch = context.payload.ref.replace(/^refs\/heads\//, '');
             let branches = [];
             let prs = [];
 
-            // Get pull requests
             const pulls = await github.paginate(
               'GET /repos/{owner}/{repo}/pulls',
               { owner, repo, base: base_branch }
             );
-            console.log('Found ' + pulls.length + ' pull request' + (pulls.length === 1 ? '': 's') );
-
             if ( pulls.length === 0 ) {
               core.setFailed('No PRs/branches found');
               return;
             }
+            console.log('Found ' + pulls.length + ' pull request' + (pulls.length === 1 ? '': 's') );
 
             for ( const pull of pulls ) {
               // pull.head.ref = 'dependabot/etc/etc'
@@ -108,7 +103,7 @@ jobs:
               // pull.labels[] = { name: '', color: 'ffffff', description: '' }
               // pull._links.html.href // url to GitHub PR page
               const branch = pull.head.ref;
-              const matched_branch = branch.startsWith( BRANCH_PREFIX );
+              const matched_branch = branch.startsWith( branchPrefix );
 
               if ( ! matched_branch ) {
                 console.log('PR #' + pull.number + ' (skip)' + ' - ' + branch );
@@ -175,7 +170,11 @@ jobs:
                     if ( labels_force_skip ) {
                       console.log('MATCH: One or more labels matched.');
                       statusOK = false;
+                    } else {
+                      console.log('NO MATCH');
                     }
+                  } else {
+                    console.log('NONE');
                   }
                 }
 
@@ -183,8 +182,7 @@ jobs:
                 if ( statusOK ) {
                   console.log('Result: INCLUDE');
                   branches.push( branch );
-                  prs.push('#' + pull.number + ' ' + pull.title);
-                  base_branch = pull.base.ref;
+                  prs.push('* #' + pull.number + ' ' + pull.title);
                 } else {
                   console.log('Result: SKIP');
                 }
@@ -197,59 +195,58 @@ jobs:
               core.setFailed('No PRs/branches matched criteria');
               return;
             }
+            console.log('Combined:');
+            console.log( '- ' + branches.join('\n- ') );
 
             core.setOutput('base-branch', base_branch );
             core.setOutput('prs-string', prs.join('\n') );
+            return branches.join(' ');
 
-            combined = branches.join(' ')
-            console.log('Combined: ' + combined );
-            return combined;
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-      # # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      # - uses: actions/checkout@v3
-      #   with:
-      #     fetch-depth: 0
-
-      # # Creates a branch with other PR branches merged together
-      # - name: Created combined branch
-      #   env:
-      #     BASE_BRANCH: ${{ steps.fetch-branch-names.outputs.base-branch }}
-      #     BRANCHES_TO_COMBINE: ${{ steps.fetch-branch-names.outputs.result }}
-      #     COMBINE_BRANCH_NAME: ${{ inputs.combineBranchName }}
-      #   run: |
-      #     echo "$BRANCHES_TO_COMBINE"
-      #     sourcebranches="${BRANCHES_TO_COMBINE%\"}"
-      #     sourcebranches="${sourcebranches#\"}"
+      # Creates a branch with other PR branches merged together
+      - name: Created combined branch
+        env:
+          BASE_BRANCH: ${{ steps.fetch-branch-names.outputs.base-branch }}
+          BRANCHES_TO_COMBINE: ${{ steps.fetch-branch-names.outputs.result }}
+          COMBINE_BRANCH_NAME: ${{ inputs.combineBranchName }}
+        run: |
+          echo "$BRANCHES_TO_COMBINE"
+          sourcebranches="${BRANCHES_TO_COMBINE%\"}"
+          sourcebranches="${sourcebranches#\"}"
           
-      #     basebranch="${BASE_BRANCH%\"}"
-      #     basebranch="${basebranch#\"}"
+          basebranch="${BASE_BRANCH%\"}"
+          basebranch="${basebranch#\"}"
           
-      #     git config pull.rebase false
-      #     git config --global user.name 'vHeemstra'
-      #     git config --global user.email '17368112+vHeemstra@users.noreply.github.com'
-      #     # git config user.name github-actions
-      #     # git config user.email github-actions@github.com
+          git config pull.rebase false
+          git config --global user.name 'vHeemstra'
+          git config --global user.email '17368112+vHeemstra@users.noreply.github.com'
+          # git config user.name github-actions
+          # git config user.email github-actions@github.com
           
-      #     git branch $COMBINE_BRANCH_NAME $basebranch
-      #     git checkout $COMBINE_BRANCH_NAME
-      #     git pull origin $sourcebranches --no-edit
-      #     git push origin $COMBINE_BRANCH_NAME
+          git branch $COMBINE_BRANCH_NAME $basebranch
+          git checkout $COMBINE_BRANCH_NAME
+          git pull origin $sourcebranches --no-edit
+          git push origin $COMBINE_BRANCH_NAME
 
-      # # Creates a PR with the new combined branch
-      # - uses: actions/github-script@v6
-      #   name: Create Combined Pull Request
-      #   env:
-      #     PRS_STRING: ${{ steps.fetch-branch-names.outputs.prs-string }}
-      #   with:
-      #     # github-token: ${{secrets.GITHUB_TOKEN}}
-      #     script: |
-      #       const prString = process.env.PRS_STRING;
-      #       const body = 'This PR was created by the Combine PRs action by combining the following PRs:\n' + prString;
-      #       await github.pulls.create({
-      #         owner: context.repo.owner,
-      #         repo: context.repo.repo,
-      #         title: 'Combined PR',
-      #         head: '${{ github.event.inputs.combineBranchName }}',
-      #         base: '${{ steps.fetch-branch-names.outputs.base-branch }}',
-      #         body: body
-      #       });
+      # Creates a PR with the new combined branch
+      - uses: actions/github-script@v6
+        name: Create Combined Pull Request
+        env:
+          PRS_STRING: ${{ steps.fetch-branch-names.outputs.prs-string }}
+        with:
+          # github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const prString = process.env.PRS_STRING;
+            const body = 'This PR was created by the Combine PRs action by combining the following PRs:\n' + prString;
+            await github.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: 'Combined PR',
+              head: '${{ inputs.combineBranchName }}',
+              base: '${{ steps.fetch-branch-names.outputs.base-branch }}',
+              body: body
+            });
