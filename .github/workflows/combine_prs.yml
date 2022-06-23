@@ -373,7 +373,7 @@ jobs:
             if ( semver_change.length > 0 ) {
               pr_labels.push('semver-' + semver_change );
             }
-            const labels = [ ...new Set( pr_labels ) ];
+            const labels = [ ...new Set( pr_labels.filter( l => ( l.length > 0 ) ) ) ];
 
             /*
             const new_pr_response = await github.rest.pulls.create( { owner, repo,
