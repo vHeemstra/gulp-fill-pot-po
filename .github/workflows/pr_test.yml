@@ -42,8 +42,8 @@ jobs:
           script: |
             const pkg = require('./package.json');
             console.log( pkg );
-            core.startGroup('\u001b[48;2;255;0;128mDependencies');
-            console.log( [ ...pkg.dependencies.keys() ] );
+            core.startGroup('\u001b[38;2;255;0;128mDependencies');
+            console.log( Object.keys( pkg.dependencies ) );
             core.endGroup();
             return;
             // const getSemverChange = require('./.github/workflows/get-semver-change.js');
