@@ -58,352 +58,352 @@ jobs:
           fetch-depth: 0
           # token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
 
-      # In: -  Out: JSON-encoded string
-      - name: Run custom js
-        uses: actions/github-script@v6
-        id: vhw-test
-        env:
-          SOME_ENV: 'jaja'
-        with:
-          # github-token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
-          script: |
-            const getSemverChange = require('./.github/workflows/get-commits-semver-change.js');
-            const result = getSemverChange( { github, context, core, glob, io, exec, require } );
-            console.log( result );
-            return result;
-
-      # JSON string -> JSON object -> select part -> JSON string
-      - name: Echo result
-        env:
-          TEST: ${{ toJSON( fromJSON( steps.vhw-test.outputs.result ).ar.*.text ) }}
-        run:
-          echo $TEST
-          echo $TEST2
-
-      # - name: Fetch branch names
+      # # In: -  Out: JSON-encoded string
+      # - name: Run custom js
       #   uses: actions/github-script@v6
-      #   id: fetch-branch-names
+      #   id: vhw-test
+      #   env:
+      #     SOME_ENV: 'jaja'
       #   with:
       #     # github-token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
       #     script: |
-      #       const getSemverChange = require('./get-commits-semver-change.js');
-      #       const branchPrefix = context.payload.inputs.branchPrefix;
-      #       const statusesFilter = context.payload.inputs.statusesFilter;
-      #       const checkRunsFilter = context.payload.inputs.checkRunsFilter;
-      #       const ignoreLabels = context.payload.inputs.ignoreLabels;
-      #       const semverFilter = context.payload.inputs.semverFilter;
-
-      #       // all: 'success,pending,failure,error'
-      #       // default: 'success'
-      #       const included_statuses = statusesFilter.split(',')
-      #         .map( v => v.trim() )
-      #         .filter( v => v.length > 0 );
-
-      #       // all: 'action_required,cancelled,failure,neutral,success,skipped,stale,timed_out'
-      #       // default: 'neutral,success,skipped'
-      #       const included_checkruns = checkRunsFilter.split(',')
-      #         .map( v => v.trim() )
-      #         .filter( v => v.length > 0 );
-
-      #       // default: 'nocombine'
-      #       const ignore_labels = ignoreLabels.split(',')
-      #         .map( v => v.trim() )
-      #         .filter( v => v.length > 0 );
-
-      #       const repo = context.repo.repo;
-      #       const owner = context.repo.owner;
-
-      #       const base_branch = context.payload.ref.replace(/^refs\/heads\//, '');
-      #       let branches = [];
-      #       let prs = [];
-      #       let semver_change = [ false, false, false ];
-      #       let dev_semver_change = [ false, false, false ];
-
-      #       const pulls = await github.paginate(
-      #         'GET /repos/{owner}/{repo}/pulls',
-      #         { owner, repo,
-      #           base: base_branch,
-      #           sort: 'created',
-      #           direction: 'asc'
-      #         }
+      #       const getSemverChange = require('./.github/workflows/get-semver-change.js');
+      #       const result = getSemverChange(
+      #         { github, context, core, glob, io, exec, require },
+      #         commits_array
       #       );
-      #       if ( pulls.length === 0 ) {
-      #         core.setFailed('No PRs/branches found');
-      #         return;
-      #       }
-      #       console.log('Found ' + pulls.length + ' pull request' + (pulls.length === 1 ? '': 's') );
+      #       console.log( result );
+      #       return result;
 
-      #       for ( const pull of pulls ) {
-      #         // pull.head.ref = 'dependabot/etc/etc'
-      #         // pull.number = 1
-      #         // pull.state = 'open'
-      #         // pull.locked = false
-      #         // pull.draft = false
-      #         // pull.base.ref = 'main'
-      #         // pull.title
-      #         // pull.labels[] = { name: '', color: 'ffffff', description: '' }
-      #         // pull._links.html.href // url to GitHub PR page
-      #         const branch = pull.head.ref;
-      #         const matched_branch = branch.startsWith( branchPrefix );
-
-      #         if ( ! matched_branch ) {
-      #           console.log('PR #' + pull.number + ' (skip)' + ' - ' + branch );
-      #         } else {
-      #           statusOK = true;
-
-      #           core.startGroup('PR #' + pull.number + ' - ' + branch );
-
-      #           console.log('Checking statuses:');
-      #           const combined_status = await github.paginate(
-      #             'GET /repos/{owner}/{repo}/commits/{ref}/status',
-      #             { owner, repo,
-      #               ref: branch
-      #             }
-      #           );
-      #           if ( combined_status.length > 0 && combined_status[0].statuses.length > 0 ) {
-      #             const statuses_ok = combined_status[0].statuses
-      #               .reduce( ( check, status ) => {
-      #                 return check && included_statuses.includes( status.state );
-      #               }, true );
-      #             if ( ! statuses_ok ) {
-      #               console.log('FAIL: Invalid state of one or more statuses.');
-      #               statusOK = false;
-      #             } else {
-      #               console.log('PASS');
-      #             }
-      #           }
-
-      #           if ( statusOK ) {
-      #             console.log('');
-      #             console.log('Checking check-runs:');
-      #             const checkruns = await github.paginate(
-      #               'GET /repos/{owner}/{repo}/commits/{ref}/check-runs',
-      #               { owner, repo,
-      #                 ref: branch
-      #               }
-      #             );
-      #             if ( checkruns.length > 0 ) {
-      #               const checkruns_ok = checkruns
-      #                 .reduce( ( check, checkrun ) => {
-      #                   return ( check
-      #                     && 'completed' === checkrun.status
-      #                     && included_checkruns.includes( checkrun.conclusion )
-      #                   );
-      #                 }, true );
-      #               if ( ! checkruns_ok ) {
-      #                 console.log('FAIL: Invalid status or conclusion of one or more check-runs.');
-      #                 statusOK = false;
-      #               } else {
-      #                 console.log('PASS');
-      #               }
-      #             }
-      #           }
-
-      #           if ( statusOK ) {
-      #             console.log('');
-      #             console.log('Checking ignore labels:');
-      #             const labels = pull.labels;
-      #             if ( labels.length > 0 ) {
-      #               const labels_force_skip = labels
-      #                 .reduce( ( check, label ) => {
-      #                   return ( check || ignore_labels.includes( label.name ) );
-      #                 }, false );
-      #               if ( labels_force_skip ) {
-      #                 console.log('MATCH: One or more labels matched.');
-      #                 statusOK = false;
-      #               } else {
-      #                 console.log('NO MATCH');
-      #               }
-      #             } else {
-      #               console.log('NONE');
-      #             }
-      #           }
-
-      #           if ( statusOK ) {
-      #             console.log('');
-      #             console.log('Checking semver changes on commits:');
-      #             const pr_commits = await github.paginate(
-      #               'GET /repos/{owner}/{repo}/pulls/{pull_number}/commits',
-      #               { owner, repo,
-      #                 pull_number: pull.number
-      #               }
-      #             );
-      #             const pr_semver_change = pr_commits
-      #               .reduce( ( change, commit ) => {
-      #                 const m = commit.commit.message;
-      #                 // Ignore dev-dependencies
-      #                 if ( m.match(/(?:\\n|\s)+dependency-type: direct:development/m) ) {
-      #                   return change;
-      #                 }
-      #                 if ( m.match(/(?:\\n|\s)+update-type: version-update:semver-major/m) ) {
-      #                   change[0] = true;
-      #                 }
-      #                 if ( m.match(/(?:\\n|\s)+update-type: version-update:semver-minor/m) ) {
-      #                   change[1] = true;
-      #                 }
-      #                 if ( m.match(/(?:\\n|\s)+update-type: version-update:semver-patch/m) ) {
-      #                   change[2] = true;
-      #                 }
-      #                 // TODO: other message matching
-      #                 return change;
-      #               }, [ false, false, false ] );
-      #             switch ( semverFilter ) {
-      #               case 'patch':
-      #                 if ( pr_semver_change[0] || pr_semver_change[1] ) {
-      #                   console.log('FAIL: One or more commits have major or minor semver changes.');
-      #                   statusOK = false;
-      #                 }
-      #                 break;
-      #               case 'minor':
-      #                 if ( pr_semver_change[0] ) {
-      #                   console.log('FAIL: One or more commits have major semver changes.');
-      #                   statusOK = false;
-      #                 }
-      #                 break;
-      #               case 'major':
-      #               default:
-      #                 break;
-      #             }
-      #             if ( statusOK ) {
-      #               console.log('PASS');
-      #             }
-      #             semver_change = semver_change.map( ( v, i ) => ( v && pr_semver_change[ i ] ) );
-      #           }
-
-      #           console.log('');
-      #           if ( statusOK ) {
-      #             console.log('Result: INCLUDE');
-      #             branches.push( branch );
-      #             prs.push( pull.number );
-      #           } else {
-      #             console.log('Result: SKIP');
-      #           }
-
-      #           core.endGroup();
-      #         }
-      #       }
-
-      #       if ( branches.length == 0 ) {
-      #         core.setFailed('No PRs/branches matched criteria');
-      #         return;
-      #       }
-      #       console.log('Combined:');
-      #       console.log( '- ' + branches.join('\n- ') );
-
-      #       core.setOutput('base-branch', base_branch );
-      #       core.setOutput('prs-string', prs.join(',') );
-      #       if ( semver_change[0] ) {
-      #         core.setOutput('semver-change', 'major');
-      #       } else if ( semver_change[1] ) {
-      #         core.setOutput('semver-change', 'minor');
-      #       } else if ( semver_change[2] ) {
-      #         core.setOutput('semver-change', 'patch');
-      #       } else {
-      #         // Only development changes
-      #         core.setOutput('semver-change', '');
-      #       }
-      #       return branches.join(' ');
-
-      # # Creates a branch with other PR branches merged together
-      # - name: Created combined branch
+      # # JSON string -> JSON object -> select part -> JSON string
+      # - name: Echo result
       #   env:
-      #     COMBINE_BRANCH_NAME: ${{ inputs.combineBranchName }}
-      #     BASE_BRANCH: ${{ steps.fetch-branch-names.outputs.base-branch }}
-      #     BRANCHES_TO_COMBINE: ${{ steps.fetch-branch-names.outputs.result }}
-      #   run: |
-      #     echo "$BRANCHES_TO_COMBINE"
-      #     sourcebranches="${BRANCHES_TO_COMBINE%\"}"
-      #     sourcebranches="${sourcebranches#\"}"
+      #     TEST: ${{ toJSON( fromJSON( steps.vhw-test.outputs.result ).ar.*.text ) }}
+      #   run:
+      #     echo $TEST;
+      #     echo $TEST2;
+
+      - name: Fetch branch names
+        uses: actions/github-script@v6
+        id: fetch-branch-names
+        with:
+          # github-token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+          script: |
+            const getSemverChange = require('./.github/workflows/get-semver-change.js');
+
+            const branchPrefix = context.payload.inputs.branchPrefix;
+            const statusesFilter = context.payload.inputs.statusesFilter;
+            const checkRunsFilter = context.payload.inputs.checkRunsFilter;
+            const ignoreLabels = context.payload.inputs.ignoreLabels;
+            const semverFilter = context.payload.inputs.semverFilter;
+
+            // all: 'success,pending,failure,error'
+            // default: 'success'
+            const included_statuses = statusesFilter.split(',')
+              .map( v => v.trim() )
+              .filter( v => v.length > 0 );
+
+            // all: 'action_required,cancelled,failure,neutral,success,skipped,stale,timed_out'
+            // default: 'neutral,success,skipped'
+            const included_checkruns = checkRunsFilter.split(',')
+              .map( v => v.trim() )
+              .filter( v => v.length > 0 );
+
+            // default: 'nocombine'
+            const ignore_labels = ignoreLabels.split(',')
+              .map( v => v.trim() )
+              .filter( v => v.length > 0 );
+
+            const repo = context.repo.repo;
+            const owner = context.repo.owner;
+            const base_branch = context.payload.ref.replace(/^refs\/heads\//, '');
+            let branches = [];
+            let prs = [];
+            let pr_labels = [];
+            let semver_change = [0, ''];
+
+            const pulls = await github.paginate(
+              'GET /repos/{owner}/{repo}/pulls',
+              { owner, repo,
+                base: base_branch,
+                sort: 'created',
+                direction: 'asc'
+              }
+            );
+            if ( pulls.length === 0 ) {
+              core.setFailed('No PRs/branches found');
+              return;
+            }
+            console.log('Found ' + pulls.length + ' pull request' + (pulls.length === 1 ? '': 's') );
+
+            for ( const pull of pulls ) {
+              // pull.head.ref = 'dependabot/etc/etc'
+              // pull.number = 1
+              // pull.state = 'open'
+              // pull.locked = false
+              // pull.draft = false
+              // pull.base.ref = 'main'
+              // pull.title
+              // pull.labels[] = { name: '', color: 'ffffff', description: '' }
+              // pull._links.html.href // url to GitHub PR page
+              const branch = pull.head.ref;
+              const matched_branch = branch.startsWith( branchPrefix );
+
+              if ( ! matched_branch ) {
+                console.log('PR #' + pull.number + ' (skip)' + ' - ' + branch );
+              } else {
+                statusOK = true;
+
+                core.startGroup('PR #' + pull.number + ' - ' + branch );
+
+                console.log('Checking statuses:');
+                const combined_status = await github.paginate(
+                  'GET /repos/{owner}/{repo}/commits/{ref}/status',
+                  { owner, repo,
+                    ref: branch
+                  }
+                );
+                if ( combined_status.length > 0 && combined_status[0].statuses.length > 0 ) {
+                  const statuses_ok = combined_status[0].statuses
+                    .reduce( ( check, status ) => {
+                      return check && included_statuses.includes( status.state );
+                    }, true );
+                  if ( ! statuses_ok ) {
+                    console.log('FAIL: Invalid state of one or more statuses.');
+                    statusOK = false;
+                  } else {
+                    console.log('PASS');
+                  }
+                }
+
+                if ( statusOK ) {
+                  console.log('');
+                  console.log('Checking check-runs:');
+                  const checkruns = await github.paginate(
+                    'GET /repos/{owner}/{repo}/commits/{ref}/check-runs',
+                    { owner, repo,
+                      ref: branch
+                    }
+                  );
+                  if ( checkruns.length > 0 ) {
+                    const checkruns_ok = checkruns
+                      .reduce( ( check, checkrun ) => {
+                        return ( check
+                          && 'completed' === checkrun.status
+                          && included_checkruns.includes( checkrun.conclusion )
+                        );
+                      }, true );
+                    if ( ! checkruns_ok ) {
+                      console.log('FAIL: Invalid status or conclusion of one or more check-runs.');
+                      statusOK = false;
+                    } else {
+                      console.log('PASS');
+                    }
+                  }
+                }
+
+                if ( statusOK ) {
+                  console.log('');
+                  console.log('Checking ignore labels:');
+                  const labels = pull.labels;
+                  if ( labels.length > 0 ) {
+                    const labels_force_skip = labels
+                      .reduce( ( check, label ) => {
+                        return ( check || ignore_labels.includes( label.name ) );
+                      }, false );
+                    if ( labels_force_skip ) {
+                      console.log('MATCH: One or more labels matched.');
+                      statusOK = false;
+                    } else {
+                      console.log('NO MATCH');
+                    }
+                  } else {
+                    console.log('NONE');
+                  }
+                }
+
+                if ( statusOK ) {
+                  console.log('');
+                  console.log('Checking semver changes in commits:');
+                  const pr_commits = await github.paginate(
+                    'GET /repos/{owner}/{repo}/pulls/{pull_number}/commits',
+                    { owner, repo,
+                      pull_number: pull.number
+                    }
+                  );
+                  const pr_files = await github.paginate(
+                    'GET /repos/{owner}/{repo}/pulls/{pull_number}/files',
+                    { owner, repo,
+                      pull_number: pull.number
+                    }
+                  );
+
+                  const pr_semver_change = getSemverChange(
+                    { github, context, core, glob, io, exec, require },
+                    pr_commits.map( c => c.commit.message ),
+                    pull.labels.map( l => l.name ),
+                    pr_files.map( f => f.filename )
+                  );
+
+                  switch ( semverFilter ) {
+                    case 'patch':
+                      if ( pr_semver_change[0] > 1 ) {
+                        console.log('FAIL: One or more commits have major or minor semver changes.');
+                        statusOK = false;
+                      }
+                      break;
+                    case 'minor':
+                      if ( pr_semver_change[0] > 2 ) {
+                        console.log('FAIL: One or more commits have major semver changes.');
+                        statusOK = false;
+                      }
+                      break;
+                    case 'major':
+                    default:
+                      break;
+                  }
+                  if ( statusOK ) {
+                    console.log('PASS');
+                  }
+                  if ( semver_change[0] < pr_semver_change[0] ) {
+                    semver_change = pr_semver_change;
+                  }
+                }
+
+                console.log('');
+                if ( statusOK ) {
+                  console.log('Result: INCLUDE');
+                  branches.push( branch );
+                  prs.push( pull.number );
+                  // pr_labels.push( ...pull.labels.map( l => l.name ) );
+                } else {
+                  console.log('Result: SKIP');
+                }
+
+                core.endGroup();
+              }
+            }
+
+            if ( branches.length == 0 ) {
+              core.setFailed('No PRs/branches matched criteria');
+              return;
+            }
+            console.log('Combined:');
+            console.log( '- ' + branches.join('\n- ') );
+
+            core.setOutput('base-branch', base_branch );
+            core.setOutput('prs-string', prs.join(',') );
+            core.setOutput('pr-labels', pr_labels.join(',') );
+            if ( semver_change[0] > 0 ) {
+              core.setOutput('semver-change', semver_change[1] );
+            } else {
+              // Only development changes
+              core.setOutput('semver-change', '');
+            }
+            return branches.join(' ');
+
+      # Creates a branch with other PR branches merged together
+      - name: Created combined branch
+        env:
+          COMBINE_BRANCH_NAME: ${{ inputs.combineBranchName }}
+          BASE_BRANCH: ${{ steps.fetch-branch-names.outputs.base-branch }}
+          BRANCHES_TO_COMBINE: ${{ steps.fetch-branch-names.outputs.result }}
+        run: |
+          echo "$BRANCHES_TO_COMBINE"
+          sourcebranches="${BRANCHES_TO_COMBINE%\"}"
+          sourcebranches="${sourcebranches#\"}"
           
-      #     basebranch="${BASE_BRANCH%\"}"
-      #     basebranch="${basebranch#\"}"
+          basebranch="${BASE_BRANCH%\"}"
+          basebranch="${basebranch#\"}"
           
-      #     git config pull.rebase false
-      #     git config --global user.name 'vHeemstra'
-      #     git config --global user.email '17368112+vHeemstra@users.noreply.github.com'
-      #     # git config user.name github-actions
-      #     # git config user.email github-actions@github.com
+          git config pull.rebase false
+          git config --global user.name 'vHeemstra'
+          git config --global user.email '17368112+vHeemstra@users.noreply.github.com'
+          # git config user.name github-actions
+          # git config user.email github-actions@github.com
           
-      #     git branch $COMBINE_BRANCH_NAME $basebranch
-      #     git checkout $COMBINE_BRANCH_NAME
-      #     git pull origin $sourcebranches --no-edit
-      #     git push origin $COMBINE_BRANCH_NAME
+          git branch $COMBINE_BRANCH_NAME $basebranch
+          git checkout $COMBINE_BRANCH_NAME
+          git pull origin $sourcebranches --no-edit
+          git push origin $COMBINE_BRANCH_NAME
 
-      # # Creates a PR with the new combined branch
-      # - uses: actions/github-script@v6
-      #   name: Create Combined Pull Request
-      #   env:
-      #     BASE_BRANCH: ${{ steps.fetch-branch-names.outputs.base-branch }}
-      #     PRS: ${{ steps.fetch-branch-names.outputs.prs-string }}
-      #     SEMVER_CHANGE: ${{ steps.fetch-branch-names.outputs.semver-change }}
-      #   with:
-      #     # github-token: ${{ secrets.GITHUB_TOKEN }}
-      #     github-token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
-      #     script: |
-      #       const repo = context.repo.repo;
-      #       const owner = context.repo.owner;
-      #       const combine_branch_name = context.payload.inputs.combineBranchName;
-      #       const base_branch = process.env.BASE_BRANCH;
-      #       const prs = process.env.PRS.split(',');
-      #       const semver_change = process.env.SEMVER_CHANGE;
+      # Creates a PR with the new combined branch
+      - uses: actions/github-script@v6
+        name: Create Combined Pull Request
+        env:
+          BASE_BRANCH: ${{ steps.fetch-branch-names.outputs.base-branch }}
+          PRS: ${{ steps.fetch-branch-names.outputs.prs-string }}
+          PR_LABELS: ${{ steps.fetch-branch-names.outputs.pr-labels }}
+          SEMVER_CHANGE: ${{ steps.fetch-branch-names.outputs.semver-change }}
+        with:
+          # github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+          script: |
+            const repo = context.repo.repo;
+            const owner = context.repo.owner;
+            const combine_branch_name = context.payload.inputs.combineBranchName;
+            const base_branch = process.env.BASE_BRANCH;
+            const prs = process.env.PRS.split(',');
+            let pr_labels = process.env.PR_LABELS.split(',');
+            const semver_change = process.env.SEMVER_CHANGE;
 
-      #       const prsString = '* #' + prs.join('\n* #');
+            const prsString = '* #' + prs.join('\n* #');
 
-      #       const lastPR = prs.pop();
-      #       let closesString = 'Closes #' + prs.join(', closes #');
-      #       if ( lastPR ) {
-      #         closesString = closesString + (closesString.length > 8 ? ' and closes #': '') + lastPR;
-      #       }
+            const lastPR = prs.pop();
+            let closesString = 'Closes #' + prs.join(', closes #');
+            if ( lastPR ) {
+              closesString = closesString + (closesString.length > 8 ? ' and closes #': '') + lastPR;
+            }
 
-      #       const now = new Date();
-      #       const stamp = [
-      #         now.getUTCFullYear(),
-      #         String(now.getUTCMonth()+1).padStart(2,'0'),
-      #         String(now.getUTCDate()).padStart(2, '0')
-      #       ].join('/');
+            const now = new Date();
+            const stamp = [
+              now.getUTCFullYear(),
+              String(now.getUTCMonth()+1).padStart(2,'0'),
+              String(now.getUTCDate()).padStart(2, '0')
+            ].join('/');
 
-      #       const body = [
-      #         '_This PR was created by the Combine PRs action._',
-      #         '#### Combined pull requests:',
-      #         prsString,
-      #         '---',
-      #         closesString
-      #       ].join('\n');
+            const body = [
+              '_This PR was created by the Combine PRs action._',
+              '#### Combined pull requests:',
+              prsString,
+              '---',
+              closesString
+            ].join('\n');
 
-      #       let labels = ['dependencies', 'npm'];
-      #       if ( semver_change.length > 0 ) {
-      #         labels.push('semver-' + semver_change );
-      #       }
+            if ( semver_change.length > 0 ) {
+              pr_labels.push('semver-' + semver_change );
+            }
+            const labels = [ ...new Set( pr_labels ) ];
 
-      #       /*
-      #       const new_pr_response = await github.rest.pulls.create( { owner, repo,
-      #         title: 'Combined PR (' + stamp + ')',
-      #         head: combine_branch_name,
-      #         base: base_branch,
-      #         body: body
-      #       } );
+            /*
+            const new_pr_response = await github.rest.pulls.create( { owner, repo,
+              title: 'Combined PR (' + stamp + ')',
+              head: combine_branch_name,
+              base: base_branch,
+              body: body
+            } );
 
-      #       await github.rest.issues.addLabels( {
-      #         owner, repo,
-      #         issue_number: new_pr_response.data.number,
-      #         labels
-      #       } );
-      #       */
+            await github.rest.issues.addLabels( {
+              owner, repo,
+              issue_number: new_pr_response.data.number,
+              labels
+            } );
+            */
 
-      #       const new_pr_response = await github.request(
-      #         'POST /repos/{owner}/{repo}/pulls',
-      #         { owner, repo,
-      #           title: 'Combined PR (' + stamp + ')',
-      #           head: combine_branch_name,
-      #           base: base_branch,
-      #           body: body
-      #         }
-      #       );
+            const new_pr_response = await github.request(
+              'POST /repos/{owner}/{repo}/pulls',
+              { owner, repo,
+                title: 'Combined PR (' + stamp + ')',
+                head: combine_branch_name,
+                base: base_branch,
+                body: body
+              }
+            );
 
-      #       await github.request(
-      #         'POST /repos/{owner}/{repo}/issues/{issue_number}/labels',
-      #         { owner, repo,
-      #           issue_number: new_pr_response.data.number,
-      #           labels
-      #         }
-      #       );
+            await github.request(
+              'POST /repos/{owner}/{repo}/issues/{issue_number}/labels',
+              { owner, repo,
+                issue_number: new_pr_response.data.number,
+                labels
+              }
+            );
