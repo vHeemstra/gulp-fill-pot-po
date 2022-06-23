@@ -25,6 +25,14 @@ jobs:
 # ${{ github.event.pull_request.base.sha }}
 # ${{ github.event.pull_request.merged }}
 
+      - name: Read package.json into ENV variable
+        run: |
+        echo 'PACKAGE_JSON<<EOF' >> $GITHUB_ENV
+        cat ./package.json >> $GITHUB_ENV
+        echo 'EOF' >> $GITHUB_ENV
+      - name: Echo package version
+        run: |
+        echo 'Package version: ${{ fromJson(env.PACKAGE_JSON).version }}'
 
       - name: Fetch branch names
         uses: actions/github-script@v6
@@ -34,6 +42,9 @@ jobs:
           script: |
             const pkg = require('./package.json');
             console.log( pkg );
+            core.startGroup('\u001b[48;2;255;0;128mDependencies');
+            console.log( [ ...pkg.dependencies.keys() ] );
+            core.endGroup();
             return;
             // const getSemverChange = require('./.github/workflows/get-semver-change.js');
 
