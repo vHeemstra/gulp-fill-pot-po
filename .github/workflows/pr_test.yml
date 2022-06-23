@@ -32,6 +32,9 @@ jobs:
         with:
           # github-token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
           script: |
+            const pkg = require('./package.json');
+            console.log( pkg );
+            return;
             // const getSemverChange = require('./.github/workflows/get-semver-change.js');
 
             const pr = context.payload.pull_request;
@@ -47,9 +50,6 @@ jobs:
                 pull_number: pr.number
               }
             );
-            const pkg = require('./package.json');
-            console.log( pkg );
-            return;
 
             const pr_labels = pr.labels.map( l => l.name );
             let new_pr_labels = pr_labels.slice();
