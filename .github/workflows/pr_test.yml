@@ -27,12 +27,12 @@ jobs:
 
       - name: Read package.json into ENV variable
         run: |
-        echo 'PACKAGE_JSON<<EOF' >> $GITHUB_ENV
-        cat ./package.json >> $GITHUB_ENV
-        echo 'EOF' >> $GITHUB_ENV
+          echo 'PACKAGE_JSON<<EOF' >> $GITHUB_ENV
+          cat ./package.json >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
       - name: Echo package version
         run: |
-        echo 'Package version: ${{ fromJson(env.PACKAGE_JSON).version }}'
+          echo 'Package version: ${{ fromJson(env.PACKAGE_JSON).version }}'
 
       - name: Fetch branch names
         uses: actions/github-script@v6
