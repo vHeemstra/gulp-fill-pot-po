@@ -7,23 +7,23 @@ module.exports = (
 	let pr_semver_change = [ false, false, false ];
 
 	let skip = false;
-	if ( pr_labels.contains('semver-major') ) {
+	if ( pr_labels.includes('semver-major') ) {
 		pr_semver_change[0] = true;
 		skip = true;
 	}
-	if ( pr_labels.contains('semver-minor') ) {
+	if ( pr_labels.includes('semver-minor') ) {
 		pr_semver_change[1] = true;
 		skip = true;
 	}
-	if ( pr_labels.contains('semver-patch') ) {
+	if ( pr_labels.includes('semver-patch') ) {
 		pr_semver_change[2] = true;
 		skip = true;
 	}
 
 	// If PR is not a GitHub Action dependency version bump
 	if ( ! skip && ! (
-		pr_labels.contains('dependencies')
-		&& pr_labels.contains('github actions')
+		pr_labels.includes('dependencies')
+		&& pr_labels.includes('github actions')
 	) ) {
 
 		// Pre-process messages
@@ -42,7 +42,7 @@ module.exports = (
 				const body = commit.body;
 
 				// NPM dependencies version bumps
-				if ( pr_labels.contains('dependencies') ) {
+				if ( pr_labels.includes('dependencies') ) {
 
 					// Development dependency bumps don't warrant a version bump of package
 					if ( body.match(/^\s*dependency-type: direct:development/m) ) {
@@ -84,7 +84,7 @@ module.exports = (
 		// If not yet determined and not a dependency version bump,
 		// check effected filenames.
 		if (
-			! pr_labels.contains('dependencies')
+			! pr_labels.includes('dependencies')
 			&& ! pr_semver_change[0]
 			&& ! pr_semver_change[1]
 			&& ! pr_semver_change[2]
