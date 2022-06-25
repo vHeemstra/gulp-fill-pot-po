@@ -24,9 +24,9 @@ jobs:
           # token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
 
 
-      - name: Fetch branch names
+      - name: Analzye and label PR
         uses: actions/github-script@v6
-        id: fetch-branch-names
+        id: label-pr
         with:
           # github-token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
           script: |
