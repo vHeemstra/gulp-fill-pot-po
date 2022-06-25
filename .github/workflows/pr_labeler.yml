@@ -30,6 +30,25 @@ jobs:
         with:
           # github-token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
           script: |
+            switch ( context.payload.inputs.pr_nr ) {
+              case '1':
+                core.notice('Some notice');
+                break;
+              case '2':
+                core.warning(`Some warning`);
+                break;
+              case '3':
+                core.warning(`Some error`);
+                break;
+              case '4':
+                core.setFailed(`Some fail message`);
+                break;
+              default:
+                break;
+            }
+            console.log('done');
+            return;
+
             const pkg = require('./package.json');
             const dependencies = Object.keys( pkg.dependencies );
             const devDependencies = Object.keys( pkg.devDependencies );
