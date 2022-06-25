@@ -24,20 +24,18 @@ jobs:
           # token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
 
 
-      - name: Analzye and label PR
+      - name: Analyze and label PR
         uses: actions/github-script@v6
         id: label-pr
         with:
           # github-token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
           script: |
-            // const getSemverChange = require('./.github/workflows/get-semver-change.js');
-
             const pkg = require('./package.json');
             const dependencies = Object.keys( pkg.dependencies );
             const devDependencies = Object.keys( pkg.devDependencies );
 
-            const owner = context.repo.owner; // same as: context.payload.repository.owner.login
-            const repo = context.repo.repo; // same as: context.payload.repository.name
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
 
             /*
              * Get pull request
@@ -47,11 +45,12 @@ jobs:
               core.info('Event: \u001b[38;2;255;203;107mworkflow_dispatch');
               core.info('with PR number: \u001b[38;2;137;221;255m' + context.payload.inputs.pr_nr );
               try {
-                pr = await github.rest.pulls.get({
-                  owner,
-                  repo,
-                  context.payload.inputs.pr_nr,
-                });
+                pr = await github.request(
+                  'GET /repos/{owner}/{repo}/pulls/{pull_number}',
+                  { owner, repo,
+                    pull_number: context.payload.inputs.pr_nr
+                  }
+                );
               } catch ( err ) {
                 core.setFailed(`Error: Could not get pull request.\nReason: ${err}`);
                 return false;
@@ -61,7 +60,7 @@ jobs:
               core.info('with PR number: \u001b[38;2;137;221;255m' + context.payload.pull_request.number );
               pr = context.payload.pull_request;
               if ( ! pr || ! Object.keys( pr ).length ) {
-                core.setFailed(`Error: PR object is empty`);
+                core.setFailed('Error: PR object is empty');
                 return false;
               }
             } else {
