@@ -38,7 +38,7 @@ jobs:
                 core.warning(`Some warning`);
                 break;
               case '3':
-                core.warning(`Some error`);
+                core.error(`Some error`);
                 break;
               case '4':
                 core.setFailed(`Some fail message`);
