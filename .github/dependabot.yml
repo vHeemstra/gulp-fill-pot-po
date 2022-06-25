@@ -12,9 +12,9 @@ updates:
     schedule:
       interval: "daily"
     versioning-strategy: increase
-    labels:
-      - "dependencies"
-      - "npm"
+    # labels:
+    #   - "dependencies"
+    #   - "npm"
     # ignore:
     #   - dependency-name: "fill-pot-po"
 
@@ -25,6 +25,6 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    labels:
-      - "dependencies"
-      - "github actions"
+    # labels:
+    #   - "dependencies"
+    #   - "github actions"
