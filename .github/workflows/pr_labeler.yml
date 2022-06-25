@@ -118,7 +118,7 @@ jobs:
               test: 0,
               lint: 0,
               git_config: 0,
-              docs: 0,
+              docs: 0
             };
             pr_files.map( f => {
               if ( f.filename.match( /^\.github\// ) ) {
@@ -135,7 +135,7 @@ jobs:
                 changed.lint++;
               } else if ( f.filename.match( /^\.git(?:ignore|attributes)$/ ) ) {
                 changed.git_config++;
-              } else if ( f.filename.match( /^(?:README\.md|logo\.svg)$/ ) {
+              } else if ( f.filename.match( /^(?:README\.md|logo\.svg)$/ ) ) {
                 changed.docs++;
               }
             } );
@@ -200,7 +200,7 @@ jobs:
             new_pr_labels.push( ...subject_labels );
 
             // Sanitize labels
-            new_pr_labels = [ ...new Set( new_pr_labels.filter( l => ( l.length > 0 ) ) ) ];
+            new_pr_labels = [ ...new Set( new_pr_labels.filter( l => l.length > 0 ) ) ];
 
             /*
              * Semver labels
@@ -256,7 +256,7 @@ jobs:
                 'PUT /repos/{owner}/{repo}/issues/{issue_number}/labels',
                 { owner, repo,
                   issue_number: pr.number,
-                  new_pr_labels
+                  labels: new_pr_labels
                 }
               );
               core.info('\u001b[38;2;129;237;162mDONE');
