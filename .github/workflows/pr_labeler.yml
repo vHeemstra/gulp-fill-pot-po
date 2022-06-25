@@ -45,12 +45,13 @@ jobs:
               core.info('Event: \u001b[38;2;255;203;107mworkflow_dispatch');
               core.info('with PR number: \u001b[38;2;137;221;255m' + context.payload.inputs.pr_nr );
               try {
-                pr = await github.request(
+                response = await github.request(
                   'GET /repos/{owner}/{repo}/pulls/{pull_number}',
                   { owner, repo,
                     pull_number: context.payload.inputs.pr_nr
                   }
                 );
+                pr = response.data;
               } catch ( err ) {
                 core.setFailed(`Error: Could not get pull request.\nReason: ${err}`);
                 return false;
