@@ -1,0 +1,297 @@
+name: PR labeler
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_nr:
+        description: 'Pull request number'
+        required: true
+        type: number
+        # default: 2
+
+  # pull_request:
+  #   types: [opened, reopened, synchronize, edited, unlocked]
+
+jobs:
+  update_labels:
+    name: Update labels
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          # token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+
+
+      - name: Fetch branch names
+        uses: actions/github-script@v6
+        id: fetch-branch-names
+        with:
+          # github-token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
+          script: |
+            // const getSemverChange = require('./.github/workflows/get-semver-change.js');
+
+            const pkg = require('./package.json');
+            const dependencies = Object.keys( pkg.dependencies );
+            const devDependencies = Object.keys( pkg.devDependencies );
+
+            const owner = context.repo.owner; // same as: context.payload.repository.owner.login
+            const repo = context.repo.repo; // same as: context.payload.repository.name
+
+            /*
+             * Get pull request
+             */
+            let pr;
+            if ( 'workflow_dispatch' === context.eventName ) {
+              core.info('Event: \u001b[38;2;255;203;107mworkflow_dispatch');
+              core.info('with PR number: \u001b[38;2;137;221;255m' + context.payload.inputs.pr_nr );
+              try {
+                pr = await github.rest.pulls.get({
+                  owner,
+                  repo,
+                  context.payload.inputs.pr_nr,
+                });
+              } catch ( err ) {
+                core.setFailed(`Error: Could not get pull request.\nReason: ${err}`);
+                return false;
+              }
+            } else if ( 'pull_request' === context.eventName ) {
+              core.info('Event: \u001b[38;2;255;203;107mpull_request');
+              core.info('with PR number: \u001b[38;2;137;221;255m' + context.payload.pull_request.number );
+              pr = context.payload.pull_request;
+              if ( ! pr || ! Object.keys( pr ).length ) {
+                core.setFailed(`Error: PR object is empty`);
+                return false;
+              }
+            } else {
+              core.setFailed(`Error: Wrong event: ${context.eventName}`);
+              return false;
+            }
+            core.startGroup('\u001b[38;2;255;0;128mPR object:');
+            console.log( pr );
+            core.endGroup();
+
+            /*
+             * Get effected files
+             */
+            const pr_files = await github.paginate(
+              'GET /repos/{owner}/{repo}/pulls/{pull_number}/files',
+              { owner, repo,
+                pull_number: pr.number
+              }
+            );
+            core.startGroup('\u001b[38;2;137;221;255mPR files:');
+            console.log( pr_files );
+            core.endGroup();
+
+            /*
+             * Get related commits
+             */
+            const pr_commits = await github.paginate(
+              'GET /repos/{owner}/{repo}/pulls/{pull_number}/commits',
+              { owner, repo,
+                pull_number: pr.number
+              }
+            );
+            core.startGroup('\u001b[38;2;137;221;255mPR commits:');
+            console.log( pr_commits );
+            core.endGroup();
+
+            /*
+             * Get associated labels
+             */
+            const pr_labels = pr.labels.map( l => l.name );
+            core.startGroup('\u001b[38;2;137;221;255mCurrent labels:');
+            console.log( pr_labels );
+            core.endGroup();
+
+            let new_pr_labels = [];
+
+            /*
+             * Count changed files per category
+             */
+            let changed = {
+              ci: 0,
+              package_json: 0,
+              package_src: 0,
+              package_extras: 0,
+              test: 0,
+              lint: 0,
+              git_config: 0,
+              docs: 0,
+            };
+            pr_files.map( f => {
+              if ( f.filename.match( /^\.github\// ) ) {
+                changed.ci++;
+              } else if ( f.filename.match( /^package(?:-lock)?\.json$/ ) ) {
+                changed.package_json++;
+              } else if ( f.filename.match( /^(?:index|src\/.+)\.js/ ) ) {
+                changed.package_src++;
+              } else if ( f.filename.match( /^(?:\.npmignore|LICEN[SC]E)$/ ) ) {
+                changed.package_extras++;
+              } else if ( f.filename.match( /^(?:jest\.config\.js|test\/.+\.(?:js|pot?))$/ ) ) {
+                changed.test++;
+              } else if ( f.filename.match( /^\.editorconfig|eslintrc\.js)$/ ) ) {
+                changed.lint++;
+              } else if ( f.filename.match( /^\.git(?:ignore|attributes)$/ ) ) {
+                changed.git_config++;
+              } else if ( f.filename.match( /^(?:README\.md|logo\.svg)$/ ) {
+                changed.docs++;
+              }
+            } );
+
+            /*
+             * Subject labels
+             */
+            let subject_labels = [];
+            if ( pr.user.login === 'dependabot[bot]' ) {
+              subject_labels.push('dependencies');
+              pr_commits.map( c => {
+                const msg = c.commit.message;
+                const match = msg.match( /^updated-dependencies:\n- dependency-name: (.+)\n  dependency-type: direct:(.+)\n  update-type: version-update:semver-(.+)$/m );
+                if ( match ) {
+                  if ( devDependencies.includes( match[1] ) ) {
+                    subject_labels.push('npm');
+                    if ( match[1].match( /^eslint/ ) ) {
+                      subject_labels.push('lint');
+                    } else {
+                      subject_labels.push('test');
+                    }
+                  } else if ( dependencies.includes( match[1] ) ) {
+                    subject_labels.push('npm');
+                    subject_labels.push('package');
+                  } else if ( changed.ci ) {
+                    subject_labels.push('github actions');
+                    subject_labels.push('ci');
+                  }
+                } else {
+                  subject_labels.push('triage');
+                }
+              } );
+            } else {
+              pr_files.map( f => {
+                if ( changed.package_json ) {
+                  // Can be package/test/lint and/or dependencies
+                  subject_labels.push('triage');
+                }
+                if ( [
+                  changed.package_src,
+                  changed.package_extras,
+                ].reduce( ( t, v ) => t + v ) ) {
+                  subject_labels.push('package');
+                }
+                if ( changed.docs ) {
+                  subject_labels.push('documentation');
+                }
+                if ( changed.ci ) {
+                  subject_labels.push('ci');
+                }
+                if ( changed.test ) {
+                  subject_labels.push('test');
+                }
+                if ( changed.lint ) {
+                  subject_labels.push('lint');
+                }
+                // if ( changed.git_config ) {
+                //   subject_labels.push('git');
+                // }
+              } );
+            }
+            new_pr_labels.push( ...subject_labels );
+
+            // Sanitize labels
+            new_pr_labels = [ ...new Set( new_pr_labels.filter( l => ( l.length > 0 ) ) ) ];
+
+            /*
+             * Semver labels
+             */
+            const semver_labels = [
+              '',
+              'none',
+              'patch',
+              'minor',
+              'major',
+            ];
+            let semver_idx = 1;
+
+            // Based on keywords in commits' message
+            pr_commits.map( c => {
+              const msg = c.commit.message;
+              if ( msg.match( /^\s*[-*]?\s*(?:fix|patch)/mi ) ) {
+                semver_idx = Math.max( semver_idx, 2 );
+              }
+              if ( msg.match( /^\s*[-*]?\s*(?:feat|minor)/mi ) ) {
+                semver_idx = Math.max( semver_idx, 3 );
+              }
+              if ( msg.match( /^\s*[-*]?\s*(?:breaking|major)/mi ) ) {
+                semver_idx = Math.max( semver_idx, 4 );
+              }
+            } );
+
+            // Based on content change (as marked by new labels)
+            if ( new_pr_labels.includes('package') ) {
+              semver_idx = Math.max( semver_idx, 2 );
+            }
+
+            // Add semver label
+            const semver_label = semver_labels[ semver_idx ];
+            if ( semver_label.length > 0 ) {
+              new_pr_labels.push('semver-' + semver_label );
+            } else {
+              new_pr_labels.push('triage');
+            }
+
+            core.startGroup('\u001b[38;2;153;204;153mNew labels:');
+            console.log( new_pr_labels );
+            core.endGroup();
+
+            /*
+             * Set new labels
+             * NOTE: overwrites all previous labels
+             */
+            console.log('Saving labels...');
+            let had_error = false;
+            try {
+              await github.request(
+                'PUT /repos/{owner}/{repo}/issues/{issue_number}/labels',
+                { owner, repo,
+                  issue_number: pr.number,
+                  new_pr_labels
+                }
+              );
+              core.info('\u001b[38;2;129;237;162mDONE');
+            } catch ( err ) {
+              had_error = false;
+              core.setFailed(`Error: Labels could not be updated.\nReason: ${err}`);
+              core.error(`Labels could not be updated.\nReason: ${err}`);
+            }
+
+            /*
+             * Request review if 'triage' was added (or on error)
+             */
+            if ( ! pr_labels.includes('triage') && new_pr_labels.includes('triage') ) {
+              console.log("Label 'triage' was set.");
+              had_error = true;
+            }
+            if ( had_error ) {
+              core.info('\u001b[38;2;255;203;107mRequesting review from repo owner...');
+              try {
+                await github.request(
+                  'POST /repos/{owner}/{repo}/pulls/{pull_number}/requested_reviewers',
+                  { owner, repo,
+                    pull_number: pr.number,
+                    reviewers: [
+                      owner,
+                    ]
+                  }
+                );
+                core.info('\u001b[38;2;129;237;162mDONE');
+                core.notice('A review from repo owner was requested');
+              } catch ( err ) {
+                core.warning(`A review from repo owner could not be requested.\nReason: ${err}`);
+                // console.log( err );
+              }
+            }
+
+            return ( ! had_error );
