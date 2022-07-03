@@ -30,24 +30,7 @@ jobs:
         with:
           # github-token: ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}
           script: |
-            switch ( context.payload.inputs.pr_nr ) {
-              case '1':
-                core.notice('Some notice');
-                break;
-              case '2':
-                core.warning(`Some warning`);
-                break;
-              case '3':
-                core.error(`Some error`);
-                break;
-              case '4':
-                core.setFailed(`Some fail message`);
-                break;
-              default:
-                break;
-            }
-            console.log('done');
-            return;
+            //TODO: test review request
 
             const pkg = require('./package.json');
             const dependencies = Object.keys( pkg.dependencies );
@@ -62,7 +45,7 @@ jobs:
             let pr;
             if ( 'workflow_dispatch' === context.eventName ) {
               core.info('Event: \u001b[38;2;255;203;107mworkflow_dispatch');
-              core.info('with PR number: \u001b[38;2;137;221;255m' + context.payload.inputs.pr_nr );
+              core.info('with PR number: \u001b[38;2;199;146;234m' + context.payload.inputs.pr_nr );
               try {
                 response = await github.request(
                   'GET /repos/{owner}/{repo}/pulls/{pull_number}',
@@ -77,17 +60,20 @@ jobs:
               }
             } else if ( 'pull_request' === context.eventName ) {
               core.info('Event: \u001b[38;2;255;203;107mpull_request');
-              core.info('with PR number: \u001b[38;2;137;221;255m' + context.payload.pull_request.number );
               pr = context.payload.pull_request;
               if ( ! pr || ! Object.keys( pr ).length ) {
+                core.startGroup('Context payload:');
+                console.log( context?.payload );
+                core.endGroup();
                 core.setFailed('Error: PR object is empty');
                 return false;
               }
+              core.info('with PR number: \u001b[38;2;199;146;234m' + context.payload.pull_request.number );
             } else {
               core.setFailed(`Error: Wrong event: ${context.eventName}`);
               return false;
             }
-            core.startGroup('\u001b[38;2;255;0;128mPR object:');
+            core.startGroup('\u001b[38;2;m137;221;255PR object:');
             console.log( pr );
             core.endGroup();
 
@@ -100,7 +86,7 @@ jobs:
                 pull_number: pr.number
               }
             );
-            core.startGroup('\u001b[38;2;137;221;255mPR files:');
+            core.startGroup('\u001b[38;2;m130;170;255PR files:');
             console.log( pr_files );
             core.endGroup();
 
@@ -113,7 +99,7 @@ jobs:
                 pull_number: pr.number
               }
             );
-            core.startGroup('\u001b[38;2;137;221;255mPR commits:');
+            core.startGroup('\u001b[38;2;130;170;255mPR commits:');
             console.log( pr_commits );
             core.endGroup();
 
@@ -121,6 +107,7 @@ jobs:
              * Get associated labels
              */
             const pr_labels = pr.labels.map( l => l.name );
+            console.log('');
             core.startGroup('\u001b[38;2;137;221;255mCurrent labels:');
             console.log( pr_labels );
             core.endGroup();
