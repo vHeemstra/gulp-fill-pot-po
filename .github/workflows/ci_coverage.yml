@@ -16,10 +16,14 @@ on:
       - 'package.json'
       - 'package-lock.json'
 
+  release:
+    types: [published]
+
 jobs:
   collect_and_upload:
     name: Collect and upload test coverage
     if: |
+      github.event_name != 'push' ||
       !startsWith(github.event.head_commit.message, 'Merge pull request #')
     runs-on: ubuntu-latest
 
