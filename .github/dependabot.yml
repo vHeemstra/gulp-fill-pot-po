@@ -9,6 +9,7 @@ updates:
   - package-ecosystem: "npm"
     # Package(-lock).json files stored in repository root
     directory: "/"
+    target-branch: "dev"
     schedule:
       interval: "daily"
     versioning-strategy: increase
@@ -23,6 +24,7 @@ updates:
     # Workflow files stored in the
     # default location of `.github/workflows`
     directory: "/"
+    target-branch: "dev"
     schedule:
       interval: "weekly"
     labels:
