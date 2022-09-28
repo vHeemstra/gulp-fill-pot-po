@@ -41,7 +41,7 @@
   "dependencies": {
     "fill-pot-po": "^2.1.10",
     "plugin-error": "^2.0.0",
-    "vinyl": "^2.2.1"
+    "vinyl": "^3.0.0"
   },
   "devDependencies": {
     "eslint": "^8.24.0",
