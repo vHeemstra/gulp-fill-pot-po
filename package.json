@@ -44,7 +44,7 @@
     "vinyl": "^3.0.0"
   },
   "devDependencies": {
-    "eslint": "^8.28.0",
+    "eslint": "^8.29.0",
     "eslint-plugin-jest": "^27.1.6",
     "jest": "^29.3.1",
     "matched": "^5.0.1"
