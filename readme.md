@@ -9,7 +9,7 @@ gulp-fill-pot-po<br/>
 </h1>
 <div align="center">
 
-[![Build Status][ci-image]][ci-url]
+[![Build Status][ci-image4]][ci-url]
 [![Coverall Coverage Status][coverage-image]][coverage-url]
 [![Dependencies Status][deps-image]][deps-url]
 [![Downloads][downloads-image]][npm-url]
