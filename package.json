@@ -39,7 +39,7 @@
     "translation"
   ],
   "dependencies": {
-    "fill-pot-po": "^2.1.13",
+    "fill-pot-po": "^2.1.16",
     "plugin-error": "^2.0.1",
     "vinyl": "^3.0.0"
   },
