@@ -1,6 +1,6 @@
 {
   "name": "gulp-fill-pot-po",
-  "version": "2.0.6",
+  "version": "2.0.7",
   "description": "Create pre-filled po files using existing po files with pot file via gulp",
   "license": "MIT",
   "repository": "https://github.com/vheemstra/gulp-fill-pot-po.git",
