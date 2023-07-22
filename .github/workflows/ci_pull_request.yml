@@ -10,11 +10,12 @@ on:
     #   - main
     # Only run when push includes commits with changes to:
     paths:
-      # - 'src/**.js'
-      - 'index.js'
-      - 'test/**.js'
+      - 'src/**.ts'
+      - 'test/**.ts'
       - 'test/**.pot?'
-      - 'jest.config.js'
+      - 'jest.config.ts'
+      - 'tsup.config.js'
+      - 'tsconfig.json'
       - 'package.json'
       - 'package-lock.json'
 
@@ -92,3 +93,6 @@ jobs:
       #     # path_to_write_report: ./coverage/codecov_report.txt
       #     # fail_ci_if_error: true # optional (default = false)
       #     verbose: true # optional (default = false)
+
+      - name: Build package
+        run: npm run build
