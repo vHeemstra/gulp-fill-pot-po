@@ -2,3 +2,4 @@
 /other
 /test/coverage
 *.bak
+/dist

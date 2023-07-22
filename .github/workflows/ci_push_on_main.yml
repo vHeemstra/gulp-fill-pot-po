@@ -6,10 +6,11 @@ on:
       - main
     # Only run when push includes commits with changes to:
     paths:
-      # - 'src/**'
-      - 'index.js'
+      - 'src/**.ts'
       - '.npmignore'
       - 'LICENSE'
+      - 'tsup.config.js'
+      - 'tsconfig.json'
       - 'package.json'
       - 'package-lock.json'
 
@@ -63,6 +64,8 @@ jobs:
         run: npm ci
       - name: Run Jest
         run: npm test
+      - name: Build package
+        run: npm run build
 
   version:
     name: Release new version

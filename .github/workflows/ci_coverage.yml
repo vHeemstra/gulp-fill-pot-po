@@ -8,11 +8,12 @@ on:
       - main
     # Only run when push includes commits with changes to:
     paths:
-      # - 'src/**.js'
-      - 'index.js'
-      - 'test/**.js'
+      - 'src/**.ts'
+      - 'test/**.ts'
       - 'test/**.pot?'
-      - 'jest.config.js'
+      - 'jest.config.ts'
+      - 'tsup.config.js'
+      - 'tsconfig.json'
       - 'package.json'
       - 'package-lock.json'
 
@@ -26,7 +27,6 @@ jobs:
       github.event_name != 'push' ||
       !startsWith(github.event.head_commit.message, 'Merge pull request #')
     runs-on: ubuntu-latest
-
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
