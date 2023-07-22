@@ -1,4 +1,5 @@
 import Vinyl from 'vinyl';
+import { Buffer } from 'node:buffer';
 import { Transform } from 'node:stream';
 import PluginError from 'plugin-error';
 
@@ -22,7 +23,15 @@ const gulpFillPotPo = (options) => {
   const transformer = new Transform({
     objectMode: true,
     transform(file, encoding, done) {
-      if (!(file instanceof Vinyl)) {
+      if (
+        !(
+          file instanceof Vinyl ||
+          (typeof file === 'object' &&
+            typeof file.contents === 'object' &&
+            file.contents instanceof Buffer &&
+            typeof file.path === 'string')
+        )
+      ) {
         return done(
           new PluginError(PLUGIN_NAME, 'Only Vinyl objects can be transformed.')
         );
