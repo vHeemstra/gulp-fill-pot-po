@@ -17,6 +17,11 @@ const PLUGIN_NAME = 'gulp-fill-pot-po';
  * @return {object} Writable and readable Node stream.Transform
  */
 const gulpFillPotPo = (options) => {
+  // Disable writing files as default for Gulp.
+  if (Object.prototype.toString.call(options) === '[object Object]') {
+    options.writeFiles = options?.writeFiles ?? false;
+  }
+
   options = prepareOptions(options);
 
   // Create Node.js Transform stream
@@ -26,6 +31,7 @@ const gulpFillPotPo = (options) => {
       if (
         !(
           file instanceof Vinyl ||
+          Vinyl.isVinyl(file) ||
           (typeof file === 'object' &&
             typeof file.contents === 'object' &&
             file.contents instanceof Buffer &&
