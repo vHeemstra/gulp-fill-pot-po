@@ -1,11 +1,10 @@
-'use strict';
-
-import gulpFillPotPo from '../src';
+import gulpFillPotPo, { makeCallback } from '../src';
 import { testOptions } from 'fill-pot-po';
 
 import { sync as matchedSync } from 'matched';
 import * as fs from 'node:fs';
 import Vinyl from 'vinyl';
+import { Transform } from 'node:stream';
 
 // import {jest} from '@jest/globals';
 // jest.mock('node:fs', () => ({
@@ -781,92 +780,46 @@ describe('index.js › single POT', () => {
     });
   });
 
-  // NOTE: this test is no longer usable.
-  // The readFile function doing the reading is outside of our scope (so we can't mock it).
-  // AND/OR, since we provide a Vinyl, there's no reading the POT file (but maybe reading PO files?).
-  // ---
-  /* eslint-disable jest/no-commented-out-tests */
-  // _describe('when error (reading POT file)', () => {
-  //   it('should error and not pass data', (_done) => {
-  //     // Mock the fs.readFile function
-  //     const readFileSpy = jest
-  //       .spyOn(fs, 'readFile')
-  //       .mockName('fs.readFile')
-  //       .mockImplementation((path, cb) => {
-  //         cb(
-  //           { message: 'POT_MOCK_FS_READFILE_ERROR' } as NodeJS.ErrnoException,
-  //           Buffer.from('')
-  //         );
-  //       });
-  //
-  //     const done = (...args) => {
-  //       // Restore the fs.readFile function
-  //       readFileSpy.mockRestore();
-  //       _done(...args);
-  //     };
-  //
-  //     // Set options
-  //     const options = {
-  //       ...testOptions,
-  //       potSources: [
-  //         pot_source_path.replace('text-domain', 'non-existing-file'),
-  //       ],
-  //       writeFiles: false,
-  //     };
-  //
-  //     // Create the plugin stream
-  //     let fillPotPo;
-  //     try {
-  //       expect(() => {
-  //         fillPotPo = gulpFillPotPo(options);
-  //       }).not.toThrow();
-  //     } catch (jest_error) {
-  //       done(jest_error);
-  //     }
-  //
-  //     // When outputing a new file
-  //     fillPotPo.on('data', () => {
-  //       try {
-  //         // This should not run
-  //         expect('called on data').toEqual('no on data');
-  //
-  //         // done(); // called in the end event listener
-  //       } catch (jest_error) {
-  //         done(jest_error);
-  //       }
-  //     });
-  //
-  //     // On error
-  //     fillPotPo.on('error', (error) => {
-  //       try {
-  //         // Error message should match
-  //         expect(error).toMatchObject({
-  //           message: expect.stringMatching(/POT_MOCK_FS_READFILE_ERROR/),
-  //         });
-  //
-  //         done();
-  //       } catch (jest_error) {
-  //         done(jest_error);
-  //       }
-  //     });
-  //
-  //     // When all is finished
-  //     fillPotPo.on('end', () => {
-  //       try {
-  //         // This should not run
-  //         expect('called on end').toEqual('no on end');
-  //
-  //         done();
-  //       } catch (jest_error) {
-  //         done(jest_error);
-  //       }
-  //     });
-  //
-  //     // Start processing non-existing POT file
-  //     fillPotPo.end(pot_source_vinyl);
-  //   });
-  // });
-  /* eslint-enable jest/no-commented-out-tests */
+  describe('when error result is passed to a created result callback', () => {
+    it('should return the result of calling the supplied done callback with a PluginError of the error result', (done) => {
+      try {
+        const cb = makeCallback(new Transform(), (maybe_error = null) => {
+          return maybe_error;
+        });
+
+        let result = null;
+
+        expect(() => {
+          result = cb([false, 'MOCK_ERROR_STRING']);
+        }).not.toThrow();
+
+        expect(result).toMatchObject({
+          message: expect.stringMatching(/MOCK_ERROR_STRING/),
+        });
+      } catch (jest_error) {
+        done(jest_error);
+        return;
+      }
+
+      done();
+    });
+  });
+
+  describe('just calling plugin with empty options object', () => {
+    it('should not yet throw errors', (done) => {
+      // Create the plugin stream
+      try {
+        expect(() => {
+          gulpFillPotPo({});
+        }).not.toThrow();
+      } catch (jest_error) {
+        done(jest_error);
+        return;
+      }
+
+      done();
+    });
+  });
 
   // TODO? with write
   // TODO? multiple POTs

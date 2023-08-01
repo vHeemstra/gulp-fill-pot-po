@@ -1,13 +1,32 @@
 import Vinyl from 'vinyl';
-import { Buffer } from 'node:buffer';
 import { Transform } from 'node:stream';
 import PluginError from 'plugin-error';
 
 import fillPotPo from 'fill-pot-po';
 // import { sync as fillPotPoSync } from 'fill-pot-po';
 import { prepareOptions } from 'fill-pot-po';
+import type { AsyncCallback } from 'fill-pot-po';
 
 const PLUGIN_NAME = 'gulp-fill-pot-po';
+
+/**
+ * Creates a callback function that can handle fill-pot-po's returned results
+ * @param {Transform} transform The transformer object processing the files.
+ * @param {function} done The `done` callback provided inside the transformer's `transform` method.
+ * @returns {AsyncCallback} Returns the callback function for the async version of `fill-pot-po` to use.
+ */
+export const makeCallback =
+  (transform: Transform, done: (error?: unknown) => unknown): AsyncCallback =>
+  (result) => {
+    if (result[0]) {
+      result[1].forEach((return_file) => {
+        transform.push(return_file);
+      });
+      return done();
+    } else {
+      return done(new PluginError(PLUGIN_NAME, result[1] as string));
+    }
+  };
 
 /**
  * Run the PO generator.
@@ -18,26 +37,13 @@ const PLUGIN_NAME = 'gulp-fill-pot-po';
  */
 const gulpFillPotPo = (options) => {
   // Disable writing files as default for Gulp.
-  if (Object.prototype.toString.call(options) === '[object Object]') {
-    options.writeFiles = options?.writeFiles ?? false;
-  }
-
-  options = prepareOptions(options);
+  options = prepareOptions(options, false);
 
   // Create Node.js Transform stream
   const transformer = new Transform({
     objectMode: true,
     transform(file, encoding, done) {
-      if (
-        !(
-          file instanceof Vinyl ||
-          Vinyl.isVinyl(file) ||
-          (typeof file === 'object' &&
-            typeof file.contents === 'object' &&
-            file.contents instanceof Buffer &&
-            typeof file.path === 'string')
-        )
-      ) {
+      if (!Vinyl.isVinyl(file)) {
         return done(
           new PluginError(PLUGIN_NAME, 'Only Vinyl objects can be transformed.')
         );
@@ -84,16 +90,7 @@ const gulpFillPotPo = (options) => {
       // }
 
       // Async
-      fillPotPo((result) => {
-        if (result[0]) {
-          result[1].forEach((return_file) => {
-            this.push(return_file);
-          });
-          return done();
-        } else {
-          return done(new PluginError(PLUGIN_NAME, result[1] as string));
-        }
-      }, options);
+      fillPotPo(makeCallback(this, done), options);
     },
     flush(done) {
       done();
