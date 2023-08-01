@@ -1,6 +1,6 @@
 {
   "name": "gulp-fill-pot-po",
-  "version": "2.1.3",
+  "version": "2.1.4",
   "description": "Create pre-filled po files using existing po files with pot file via gulp",
   "author": {
     "name": "Philip van Heemstra",
