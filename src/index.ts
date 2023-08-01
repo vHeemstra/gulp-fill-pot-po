@@ -5,7 +5,7 @@ import PluginError from 'plugin-error';
 import fillPotPo from 'fill-pot-po';
 // import { sync as fillPotPoSync } from 'fill-pot-po';
 import { prepareOptions } from 'fill-pot-po';
-import type { AsyncCallback } from '../../fill-pot-po';
+import type { AsyncCallback } from 'fill-pot-po';
 
 const PLUGIN_NAME = 'gulp-fill-pot-po';
 
