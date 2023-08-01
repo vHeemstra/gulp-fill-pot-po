@@ -4,6 +4,7 @@
     "moduleResolution": "NodeNext",
     "lib": ["ES2021.String"],
     "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "target": "ES2020"
   }
 }
