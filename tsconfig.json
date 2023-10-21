@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "module": "ES2022",
-    "moduleResolution": "NodeNext",
+    "module": "Node16",
+    "moduleResolution": "Node16",
     "lib": ["ES2021.String"],
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
