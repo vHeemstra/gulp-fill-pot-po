@@ -11,7 +11,7 @@ updates:
     directory: "/"
     target-branch: "dev"
     schedule:
-      interval: "daily"
+      interval: "monthly"
     versioning-strategy: increase
     labels:
       - "dependencies"
@@ -26,7 +26,7 @@ updates:
     directory: "/"
     target-branch: "dev"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
     labels:
       - "dependencies"
       - "github actions"
