@@ -52,7 +52,7 @@
   "homepage": "https://github.com/vheemstra/gulp-fill-pot-po",
   "bugs": "https://github.com/vheemstra/gulp-fill-pot-po/issues",
   "dependencies": {
-    "fill-pot-po": "^2.2.7",
+    "fill-pot-po": "^2.2.8",
     "plugin-error": "^2.0.1",
     "vinyl": "^3.0.0"
   },
