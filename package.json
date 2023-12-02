@@ -23,10 +23,11 @@
     "lint": "eslint src/*.ts test/*.ts",
     "lint:fix": "eslint --fix src/*.ts test/*.ts",
     "test": "jest",
-    "coverage": "jest --coverage"
+    "coverage": "jest --coverage",
+    "build:test": "tsup && jest"
   },
   "engines": {
-    "node": ">=12"
+    "node": ">=18"
   },
   "files": [
     "dist"
@@ -52,7 +53,7 @@
   "homepage": "https://github.com/vheemstra/gulp-fill-pot-po",
   "bugs": "https://github.com/vheemstra/gulp-fill-pot-po/issues",
   "dependencies": {
-    "fill-pot-po": "^2.2.8",
+    "fill-pot-po": "^3.0.0",
     "plugin-error": "^2.0.1",
     "vinyl": "^3.0.0"
   },
@@ -70,7 +71,7 @@
     "matched": "^5.0.1",
     "ts-jest": "^29.1.1",
     "ts-node": "^10.9.1",
-    "tsup": "^7.2.0",
+    "tsup": "^8.0.1",
     "typescript": "^5.3.2",
     "utility-types": "^3.10.0"
   }
