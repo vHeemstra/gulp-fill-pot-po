@@ -53,15 +53,15 @@
   "homepage": "https://github.com/vheemstra/gulp-fill-pot-po",
   "bugs": "https://github.com/vheemstra/gulp-fill-pot-po/issues",
   "dependencies": {
-    "fill-pot-po": "^3.0.3",
+    "fill-pot-po": "^3.0.4",
     "plugin-error": "^2.0.1",
     "vinyl": "^3.0.0"
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",
     "@types/vinyl": "^2.0.11",
-    "@typescript-eslint/eslint-plugin": "^7.1.0",
-    "@typescript-eslint/parser": "^7.1.0",
+    "@typescript-eslint/eslint-plugin": "^7.5.0",
+    "@typescript-eslint/parser": "^7.5.0",
     "babel-plugin-transform-import-meta": "^2.2.1",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
@@ -72,7 +72,7 @@
     "ts-jest": "^29.1.2",
     "ts-node": "^10.9.2",
     "tsup": "^8.0.2",
-    "typescript": "^5.3.3",
+    "typescript": "^5.4.4",
     "utility-types": "^3.11.0"
   }
 }
