@@ -59,7 +59,7 @@
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",
-    "@types/vinyl": "^2.0.11",
+    "@types/vinyl": "^2.0.12",
     "@typescript-eslint/eslint-plugin": "^7.5.0",
     "@typescript-eslint/parser": "^7.5.0",
     "babel-plugin-transform-import-meta": "^2.2.1",
