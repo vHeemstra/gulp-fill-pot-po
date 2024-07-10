@@ -23,7 +23,7 @@ gulp-fill-pot-po<br/>
 >
 > _For more information, details and all options, see [documentation of **fill-pot-po**][fpp-url]._
 >
-> ✨ **_This package now supports both ESM and CommonJS_** 🎉
+> ✨ **_This package now only supports ESM. For CommonJS use version 3._** 🎉
 
 ## Install
 
@@ -49,7 +49,7 @@ const defaultTask = () => {
 export default defaultTask;
 ```
 
-### Basic (CommonJS)
+### Basic (CommonJS - only with versions <= 3)
 
 ```js
 const { src, dest } = require('gulp');
