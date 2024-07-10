@@ -7,16 +7,9 @@
     "url": "https://github.com/vheemstra"
   },
   "license": "MIT",
+  "type": "module",
   "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "require": "./dist/index.js",
-      "import": "./dist/index.mjs"
-    }
-  },
   "scripts": {
     "dev": "npm run build -- --watch src",
     "build": "tsup",
@@ -53,7 +46,7 @@
   "homepage": "https://github.com/vheemstra/gulp-fill-pot-po",
   "bugs": "https://github.com/vheemstra/gulp-fill-pot-po/issues",
   "dependencies": {
-    "fill-pot-po": "^3.0.4",
+    "fill-pot-po": "^4.0.2",
     "plugin-error": "^2.0.1",
     "vinyl": "^3.0.0"
   },

@@ -1,9 +1,9 @@
 import type { JestConfigWithTsJest } from 'ts-jest';
 
-import { defaults as tsjPreset } from 'ts-jest/presets';
+// import { defaults as tsjPreset } from 'ts-jest/presets';
 // import { defaultsESM as tsjPreset } from 'ts-jest/presets';
 // import { jsWithTs as tsjPreset } from 'ts-jest/presets';
-// import { jsWithTsESM as tsjPreset } from 'ts-jest/presets';
+import { jsWithTsESM as tsjPreset } from 'ts-jest/presets';
 // import { jsWithBabel as tsjPreset } from 'ts-jest/presets';
 // import { jsWithBabelESM as tsjPreset } from 'ts-jest/presets';
 
@@ -225,12 +225,14 @@ const jestConfig: JestConfigWithTsJest = {
    * See: https://kulshekhar.github.io/ts-jest/docs/getting-started/presets
    * See: https://kulshekhar.github.io/ts-jest/docs/getting-started/options/
    */
+  // preset: 'ts-jest/presets/js-with-ts',
+  transformIgnorePatterns: ['node_modules/(?!(fill-pot-po|gettext-parser)/)'],
   // preset: 'ts-jest/presets/default-esm',
   // preset: 'ts-jest',
-  // extensionsToTreatAsEsm: ['.ts'],
-  // moduleNameMapper: {
-  //   '^(\\.{1,2}/.*)\\.js$': '$1',
-  // },
+  extensionsToTreatAsEsm: ['.ts'],
+  moduleNameMapper: {
+    '^(\\.{1,2}/.*)\\.js$': '$1',
+  },
   testEnvironment: 'node',
   // testEnvironmentOptions: {
   //   NODE_OPTIONS: '--experimental-vm-modules',
@@ -239,17 +241,17 @@ const jestConfig: JestConfigWithTsJest = {
     ...tsjPreset.transform,
     // '^.+\\.[tj]sx?$' to process js/ts with `ts-jest`
     // '^.+\\.m?[tj]sx?$' to process js/ts/mjs/mts with `ts-jest`
-    '^.+\\.tsx?$': [
-      'ts-jest',
-      {
-        // ts-jest configuration goes here
-        diagnostics: false,
-        babelConfig: {
-          plugins: ['babel-plugin-transform-import-meta'],
-        },
-        // useESM: true,
-      },
-    ],
+    // '^.+\\.tsx?$': [
+    //   'ts-jest',
+    //   {
+    //     // ts-jest configuration goes here
+    //     diagnostics: false,
+    //     babelConfig: {
+    //       plugins: ['babel-plugin-transform-import-meta'],
+    //     },
+    //     // useESM: true,
+    //   },
+    // ],
   },
 };
 
